@@ -1,5 +1,6 @@
 /ir
 *.backup*
+node_modules
 */*.backup*
 maps/*.wad.backup*
 *.ts
