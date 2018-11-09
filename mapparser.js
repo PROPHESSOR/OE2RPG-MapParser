@@ -1,54 +1,23 @@
+/**
+ * Copyright (c) 2017-2018 DRRP-Team (PROPHESSOR, UsernameAK)
+ *
+ * This software is released under the MIT License.
+ * https://opensource.org/licenses/MIT
+ */
+
+"use strict";
+
 const fs = require("fs");
-const struct = require("js-struct");
+const ByteTools = require("./ByteTools");
 
 const THINGS = require("./things");
 const DECALS = require("./decals");
 
 const Config = {
-    width: 768,
-    height: 768
-}
-
-const bspcolor_t = struct.Struct([
-    struct.Type.uint8('b'),
-    struct.Type.uint8('g'),
-    struct.Type.uint8('r')
-]);
-
-const bspheader_t = struct.Struct([
-    bspcolor_t('floorcolor'),
-    bspcolor_t('celingcolor'),
-    bspcolor_t('unknown0'),
-    struct.Type.uint8('levelid'),
-    bspcolor_t('unknown1')
-]);
-
-const linedef_t = struct.Struct([
-    struct.Type.uint8('x0'),
-    struct.Type.uint8('y0'),
-    struct.Type.uint8('x1'),
-    struct.Type.uint8('y1'),
-    struct.Type.uint16('walltex'),
-    struct.Type.uint16('flags')
-]);
-
-const Count = struct.Struct([
-    struct.Type.uint16('count')
-]);
-
-const thing_t = struct.Struct([
-    struct.Type.uint8('x'),
-    struct.Type.uint8('y'),
-    struct.Type.uint8('id'),
-    struct.Type.uint16('flags')
-]);
-
-const mh = [];
-
-const vertex_t = {
-    x: 0,
-    y: 0,
+    "width": 768,
+    "height": 768
 };
+const mh = [];
 
 class Parser {
     constructor(from, to) {
@@ -61,27 +30,26 @@ class Parser {
 
         const map = this.parseMap(this.from);
 
-        fs.writeFileSync(this.to, this.generate(map.lines, map.count, texmap, map.things, map.decals));
+        fs.writeFileSync(this.to, this.generate(map.lines, map.count, texmap, map.things, map.decals, map.bspheader));
 
         this.display(map.lines, map.count, map.things, map.decals);
     }
 
     getMappings() {
-        let mf = fs.readFileSync("mappings.bin");
+        const mf = fs.readFileSync("mappings.bin");
 
         // mfh.read(reinterpret_cast<char*>(&mh), sizeof(mh));
-        for (let i = 0; i < 4; i++)
-            mh[i] = mf.readUInt32LE(i * 4);
+        for (let i = 0; i < 4; i++) mh[i] = mf.readUInt32LE(i * 4);
 
         // mfh.ignore(8 * mh.group1size + 8 * mh.group2size);
-        var offset = 16 + 8 * mh[0] + 8 * mh[1];
+        const offset = 16 + (8 * mh[0]) + (8 * mh[1]);
 
         // texmap = new uint16_t[mh.group3size];
-        let texmap = [];
+        const texmap = [];
 
         // mfh.read(reinterpret_cast<char*>(texmap), sizeof(uint16_t) * mh.group3size);
         for (let i = 0; i < mh[2]; i++) {
-            texmap.push(mf.readUInt16LE(offset + i * 2));
+            texmap.push(mf.readUInt16LE(offset + (i * 2)));
         }
 
         // delete mf;
@@ -91,52 +59,94 @@ class Parser {
 
     parseMap(from) {
         this.buffer = fs.readFileSync(from);
+        const file = new ByteTools(this.buffer);
 
-        let h = bspheader_t.read(this.buffer, 0);
-        let offset = bspheader_t.size;
-        let count = Count.read(this.buffer, offset).count;
-        // let count = struct.Type.uint8.read(this.buffer, offset); //getSize
-        offset += count * 10; //start lines
-        offset += 2;
-        count = Count.read(this.buffer, offset).count; // * 156;
-        offset += 2;
+        const bspheader = {
+            "floorcolor": {
+                "b": file.readUInt8(),
+                "g": file.readUInt8(),
+                "r": file.readUInt8()
+            },
+            "ceilingcolor": {
+                "b": file.readUInt8(),
+                "g": file.readUInt8(),
+                "r": file.readUInt8()
+            },
+            "loadingcolor": {
+                "b": file.readUInt8(),
+                "g": file.readUInt8(),
+                "r": file.readUInt8()
+            },
+            "levelid": file.readUInt8(),
+            "playerstart": file.readUInt16LE(),
+            "playerrotation": file.readUInt8()
+        };
+
+        let count = file.readUInt16LE();
+
+        console.log("Skiping", count, "bsp nodes");
+
+        file.seek(count * 10, "CUR"); // start lines
+        count = file.readUInt16LE(); // * 156;
         // count     = struct.Type.uint8.read(this.buffer, offset); //getCount
-        //offset += count ; //removeCount
-        let lines = [];
-        for (let i = 0; i < count; i++) { //parsing lines
-            lines.push(linedef_t.read(this.buffer, offset));
-            offset += linedef_t.size;
+        // offset += count ; //removeCount
+
+        console.log("Line segments", count, "at", file.tell());
+        console.log("beforelines offset", file.tell());
+
+        const lines = [];
+        for (let i = 0; i < count; i++) { // parsing lines
+            const line = {
+                "x0": file.readUInt8(),
+                "y0": file.readUInt8(),
+                "x1": file.readUInt8(),
+                "y1": file.readUInt8(),
+                "walltex": file.readUInt16LE(),
+                "flags": file.readUInt16LE()
+            };
+            lines.push(line);
+            // console.log('line', tmp);
         }
 
-        let things = this.parseThings(offset);
+        const things = this.parseThings(file);
 
-        let decals = this.parseDecals(things);
+        const decals = this.parseDecals(things);
 
         return {
             lines,
             count,
             things,
-            decals
+            decals,
+            bspheader
         };
     }
 
-    parseThings(offset) {
-        let count = Count.read(this.buffer, offset).count;
-        offset += 2;
-        var things = [];
+    parseThings(file = new ByteTools()) {
+        const count = file.readUInt16LE();
+
+        const things = [];
         for (let i = 0; i < count; i++) {
-            things.push(thing_t.read(this.buffer, offset));
-            offset += thing_t.size;
+            const thing = {
+                "x": file.readUInt8(),
+                "y": file.readUInt8(),
+                "id": file.readUInt8(),
+                "flags": file.readUInt16LE()
+            };
+            if (thing.flags === 1) {
+                thing.id = 6666;
+            }
+            things.push(thing);
+            // console.log(thing);
         }
         return things;
     }
 
     parseDecals(things) {
-        let decals = [];
-        for (let thing of things) {
+        const decals = [];
+        for (const thing of things) {
             if (!DECALS[thing.id.toString()]) continue;
 
-            let isNotFence = (thing.flags & 2050) ? 0 : 1;
+            const isNotFence = (thing.flags & 2050) ? 0 : 1;
             let x0, y0, x1, y1;
             if (thing.flags & 32) { // east
                 x0 = (thing.x * 8 + isNotFence);
@@ -177,18 +187,24 @@ class Parser {
             }
 
             decals.push({
-                id: thing.id,
-                texture: DECALS[thing.id],
+                "id": thing.id,
+                "texture": DECALS[thing.id],
                 x0,
-                y0, //: 2048 - y0,
+                y0,
                 x1,
-                y1, //: 2048 - y1
-            })
+                y1
+            });
         }
         return decals;
     }
 
-    generate(lines, count, texmap, things, decals) {
+    generate(lines, count, texmap, things, decals, bspheader) {
+        const header = `// Generated by DRRP: MapParser. Created by PROPHESSOR and UsernameAK;
+
+namespace = "zdoom";
+
+`;
+
         let ss = "";
         ss += "sector {\n";
         ss += "\theightceiling = 64;\n";
@@ -196,39 +212,68 @@ class Parser {
         ss += "\ttextureceiling = \"ceiling\";\n";
         ss += "}\n\n";
 
+        ss += `
+thing { // Player Start
+    x=${((bspheader.playerstart % 32) * 64) + 32}.000;
+    y=${((32 - Math.floor(bspheader.playerstart / 32)) * 64) - 32}.000;
+    type=1;
+    angle=${90 * bspheader.playerrotation};
+    coop=true;
+    dm=true;
+    single=true;
+    skill1=true;
+    skill2=true;
+    skill3=true;
+    skill4=true;
+    skill5=true;
+}
+
+`;
+
         let sideid = 0;
-        var vertices = [];
+        const vertices = [];
 
         function findVertex(x, y) {
-            for (var i = 0; i < vertices.length; i++) {
+            for (let i = 0; i < vertices.length; i++) {
                 if (vertices[i][0] == x && vertices[i][1] == y) return i;
             }
             vertices.push([x, y]);
             return vertices.length - 1;
         }
 
-        //vertexes
+        // vertexes
         for (let i = 0; i < count; i++) {
-            var v0 = findVertex(lines[i].x1 * 8, (256 - lines[i].y1) * 8);
-            var v1 = findVertex(lines[i].x0 * 8, (256 - lines[i].y0) * 8);
+            const v0 = findVertex(lines[i].x1 * 8, (256 - lines[i].y1) * 8);
+            const v1 = findVertex(lines[i].x0 * 8, (256 - lines[i].y0) * 8);
             ss += "sidedef {\n";
             ss += "\tsector = 0;\n";
-            ss += "\ttexturemiddle = \"drdc" + texmap[lines[i].walltex] + "\";\n";
+            ss += `\ttexturemiddle = "drdc${texmap[lines[i].walltex]}";\n`;
             ss += "}\n\n";
+            if (texmap[lines[i].walltex] < 10) {
+                ss += "sidedef {\n";
+                ss += "\tsector = 0;\n";
+                ss += `\ttexturemiddle = "drdc${texmap[lines[i].walltex]}";\n`;
+                ss += "}\n\n";
+                // TODO: Mirror
+            }
             ss += "linedef {\n";
-            ss += "\tv2 = " + v0 + ";\n";
-            ss += "\tv1 = " + v1 + ";\n";
-            ss += "\tsidefront = " + (sideid++) + ";\n";
+            ss += `\tv2 = ${v0};\n`;
+            ss += `\tv1 = ${v1};\n`;
+            ss += `\tsidefront = ${sideid++};\n`;
+            if (texmap[lines[i].walltex] < 10) ss += `\tsideback = ${sideid++};\n`;
             ss += "}\n\n";
         }
 
-        //things
+        // things
         for (let i = 0; i < things.length; i++) {
-            if (!THINGS[things[i].id.toString()]) continue;
+            if (!THINGS[things[i].id.toString()]) {
+                // console.log("Unknown thing id", things[i].id, "skip");
+                continue;
+            }
             ss += "thing {\n";
-            ss += "\ttype = " + THINGS[things[i].id.toString()] + ";\n";
-            ss += "\tx = " + things[i].x * 8 + ";\n";
-            ss += "\ty = " + (256 - things[i].y) * 8 + ";\n";
+            ss += `\ttype = ${THINGS[things[i].id.toString()]};\n`;
+            ss += `\tx = ${things[i].x * 8};\n`;
+            ss += `\ty = ${(256 - things[i].y) * 8};\n`;
 
             ss += "\tskill1 = true;\n";
             ss += "\tskill2 = true;\n";
@@ -250,46 +295,47 @@ class Parser {
             ss += "}\n\n";
         }
 
-        //decals
+        // decals
 
-        for (let decal of decals) {
-            var v0 = findVertex(decal.x0, (2048 - decal.y0));
-            var v1 = findVertex(decal.x1, (2048 - decal.y1));
+        for (const decal of decals) {
+            const v0 = findVertex(decal.x0, (2048 - decal.y0));
+            const v1 = findVertex(decal.x1, (2048 - decal.y1));
 
-            ss += "sidedef {\n"
+            ss += "sidedef {\n";
             ss += "\tsector = 0;\n";
-            ss += "\ttexturemiddle = \"" + DECALS[decal.id] + "\";\n";
+            ss += `\ttexturemiddle = "${DECALS[decal.id]}";\n`;
             ss += "}\n\n";
 
-            ss += "sidedef {\n"
+            ss += "sidedef {\n";
             ss += "\tsector = 0;\n";
-            ss += "\ttexturemiddle = \"" + DECALS[decal.id] + "\";\n";
+            ss += `\ttexturemiddle = "${DECALS[decal.id]}";\n`;
             ss += "}\n\n";
 
             ss += "linedef {\n";
-            ss += "\tv1 = " + v0 + ";\n";
-            ss += "\tv2 = " + v1 + ";\n";
-            ss += "\tsidefront = " + (sideid++) + ";\n";
-            ss += "\tsideback = " + (sideid++) + ";\n";
+            ss += `\tv1 = ${v0};\n`;
+            ss += `\tv2 = ${v1};\n`;
+            ss += `\tsidefront = ${sideid++};\n`;
+            ss += `\tsideback = ${sideid++};\n`;
             ss += "\ttwosided = true;\n";
             ss += "\tblocking = true;\n";
             ss += "\timpassable = true;\n";
             ss += "}\n\n";
         }
 
-        var vs = "";
-        for (let vertex of vertices) {
+        let vs = "";
+        for (const vertex of vertices) {
             vs += "vertex {\n";
-            vs += "\tx = " + vertex[0] + ";\n";
-            vs += "\ty = " + vertex[1] + ";\n";
+            vs += `\tx = ${vertex[0]};\n`;
+            vs += `\ty = ${vertex[1]};\n`;
             vs += "}\n\n";
         }
 
-        return vs + ss;
+        return header + vs + ss;
     }
 
     display(lines, count, things, decals) {
-        let ctx = document.getElementsByTagName("canvas")[0].getContext("2d");
+        if (!a) return;
+        const ctx = document.getElementsByTagName("canvas")[0].getContext("2d");
 
         function setColor(color) {
             ctx.fillStyle = color;
@@ -302,7 +348,7 @@ class Parser {
         function drawLine(x, y, x1, y1) {
             ctx.beginPath();
             ctx.moveTo(x, y);
-            ctx.lineTo(x1, y1)
+            ctx.lineTo(x1, y1);
             ctx.stroke();
             ctx.closePath();
         }
@@ -337,7 +383,7 @@ class Parser {
         }
 
         setColor("cyan");
-        for (let decal of decals) {
+        for (const decal of decals) {
             drawLine(decal.x0 / (2048 / Config.width), decal.y0 / (2048 / Config.height), decal.x1 / (2048 / Config.width), decal.y1 / (2048 / Config.height));
             // drawCircle(decal.x0*3,768-decal.y0*3,"X");
             // drawCircle(decal.x1*3,768-decal.y1*3,"X");
@@ -346,27 +392,36 @@ class Parser {
 }
 
 function main(from, to) {
-    // debugger;
-    // // let position = 0;
+    const parser = new Parser(from, to);
 
-
-
-    // // stream.read()
-    let parser = new Parser(from, to);
-    debugger;
     parser.parse();
 }
 
-const a = require("nw.gui").Window.get();
-a.width = Config.width;
-a.height = Config.height;
+let a = null;
 
-// main(process.argv[2] || "level03.bsp", process.argv[3] || "out.tm");
-{
-    let from = prompt("Введите полное имя .bsd файла");
-    if(from) main(from, from + ".ts");
+try {
+    a = require("nw.gui").Window.get();
+    a.width = Config.width;
+    a.height = Config.height;
+
+    // main(process.argv[2] || "level03.bsp", process.argv[3] || "out.tm");
+    {
+        const from = prompt("Введите полное имя .bsd файла");
+        if (from) main(from, `${from}.ts`);
+    }
+    document.addEventListener("click", () => {
+        const from = prompt("Введите полное имя .bsd файла");
+        if (from) main(from, `${from}.ts`);
+    });
+} catch (e) {
+    console.log("# === DRRP: MapParser === #");
+
+    const args = process.argv;
+
+    if (args.length != 3) {
+        console.info("Usage: <path/to/file.bsp>");
+        return 1;
+    }
+
+    main(args[2], `${args[2]}.TEXTMAP`);
 }
-document.addEventListener("click", function(){
-    let from = prompt("Введите полное имя .bsd файла");
-    if(from) main(from, from + ".ts");
-})

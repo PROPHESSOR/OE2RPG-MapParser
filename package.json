@@ -11,8 +11,8 @@
   "dependencies": {
     "js-struct": "^1.3.0"
   },
-  "window":{
-    "width":1024,
-	  "height":1024
+  "window": {
+    "width": 1024,
+    "height": 1024
   }
 }

@@ -120,4 +120,7 @@ module.exports = {
     //"161": 10705, //Yellow Civilian?
 
     "162": 10705, //Crate
+
+    "mapspot": 0, // Map Spot
+    "notifier": 0 // Developer notifier
 }
