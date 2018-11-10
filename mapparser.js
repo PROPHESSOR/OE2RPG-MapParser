@@ -132,9 +132,7 @@ class Parser {
                 "id": file.readUInt8(),
                 "flags": file.readUInt16LE()
             };
-            if (thing.flags === 1) {
-                thing.id = 6666;
-            }
+
             things.push(thing);
             // console.log(thing);
         }
@@ -208,23 +206,20 @@ class Parser {
         ss += "\ttextureceiling = \"ceiling\";\n";
         ss += "}\n\n";
 
-        ss += `
-thing { // Player Start
-    x=${((bspheader.playerstart % 32) * 64) + 32}.000;
-    y=${((32 - Math.floor(bspheader.playerstart / 32)) * 64) - 32}.000;
-    type=1;
-    angle=${90 * bspheader.playerrotation};
-    coop=true;
-    dm=true;
-    single=true;
-    skill1=true;
-    skill2=true;
-    skill3=true;
-    skill4=true;
-    skill5=true;
-}
-
-`;
+        ss += "thing { // Player Start\n";
+        ss += `x=${((bspheader.playerstart % 32) * 64) + 32}.000;`;
+        ss += `y=${((32 - Math.floor(bspheader.playerstart / 32)) * 64) - 32}.000;`;
+        ss += "type=1;";
+        ss += `angle=${90 * bspheader.playerrotation};`;
+        ss += "coop=true;";
+        ss += "dm=true;";
+        ss += "single=true;";
+        ss += "skill1=true;";
+        ss += "skill2=true;";
+        ss += "skill3=true;";
+        ss += "skill4=true;";
+        ss += "skill5=true;";
+        ss += "}";
 
         let sideid = 0;
         const vertices = [];
@@ -308,14 +303,19 @@ thing { // Player Start
 
         // things
         for (let i = 0; i < things.length; i++) {
-            if (!THINGS[things[i].id.toString()]) {
-                // console.log("Unknown thing id", things[i].id, "skip");
-                continue;
+            if (THINGS[things[i].id.toString()]) {
+                ss += "thing {\n";
+                ss += `\ttype = ${THINGS[things[i].id.toString()]};\n`;
+                ss += `\tx = ${things[i].x * 8};\n`;
+                ss += `\ty = ${(256 - things[i].y) * 8};\n`;
+                ss += `\tid = ${things[i].flags};\n`;
+            } else {
+                ss += "thing {\n";
+                ss += `\ttype = ${THINGS.notifier};\n`;
+                ss += `\tx = ${things[i].x * 8};\n`;
+                ss += `\ty = ${(256 - things[i].y) * 8};\n`;
+                ss += `\tcomment = "Unknown thing ${things[i].id}";\n`;
             }
-            ss += "thing {\n";
-            ss += `\ttype = ${THINGS[things[i].id.toString()]};\n`;
-            ss += `\tx = ${things[i].x * 8};\n`;
-            ss += `\ty = ${(256 - things[i].y) * 8};\n`;
 
             ss += "\tskill1 = true;\n";
             ss += "\tskill2 = true;\n";

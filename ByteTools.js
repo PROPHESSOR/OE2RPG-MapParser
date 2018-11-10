@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2018 DRRP-Team
+ * Copyright (c) 2018 DRRP-Team (PROPHESSOR)
  *
  * This software is released under the MIT License.
  * https://opensource.org/licenses/MIT
