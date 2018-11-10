@@ -86,16 +86,13 @@ class Parser {
 
         console.log("Skiping", count, "bsp nodes");
 
-        file.seek(count * 10, "CUR"); // start lines
-        count = file.readUInt16LE(); // * 156;
-        // count     = struct.Type.uint8.read(this.buffer, offset); //getCount
-        // offset += count ; //removeCount
+        file.seek(count * 10, "CUR");
+        count = file.readUInt16LE();
 
         console.log("Line segments", count, "at", file.tell());
-        console.log("beforelines offset", file.tell());
 
         const lines = [];
-        for (let i = 0; i < count; i++) { // parsing lines
+        for (let i = 0; i < count; i++) {
             const line = {
                 "x0": file.readUInt8(),
                 "y0": file.readUInt8(),
@@ -105,7 +102,6 @@ class Parser {
                 "flags": file.readUInt16LE()
             };
             lines.push(line);
-            // console.log('line', tmp);
         }
 
         const things = this.parseThings(file);
@@ -134,7 +130,6 @@ class Parser {
             };
 
             things.push(thing);
-            // console.log(thing);
         }
         return things;
     }
@@ -303,12 +298,18 @@ class Parser {
 
         // things
         for (let i = 0; i < things.length; i++) {
-            if (THINGS[things[i].id.toString()]) {
+            if (things[i].flags & 1) { // Will spawn
+                ss += "thing {\n";
+                ss += `\ttype = ${THINGS.mapspot};\n`;
+                ss += `\tx = ${things[i].x * 8};\n`;
+                ss += `\ty = ${(256 - things[i].y) * 8};\n`;
+                ss += `\tid = ${(things[i].x << 5) | things[i].y};\n`;
+                ss += `\tcomment = "Will spawn ${things[i].id}";\n`;
+            } else if (THINGS[things[i].id.toString()]) {
                 ss += "thing {\n";
                 ss += `\ttype = ${THINGS[things[i].id.toString()]};\n`;
                 ss += `\tx = ${things[i].x * 8};\n`;
                 ss += `\ty = ${(256 - things[i].y) * 8};\n`;
-                ss += `\tid = ${things[i].flags};\n`;
             } else {
                 ss += "thing {\n";
                 ss += `\ttype = ${THINGS.notifier};\n`;
