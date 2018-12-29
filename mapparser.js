@@ -397,8 +397,8 @@ class Parser {
 
                 ss += `sector { // ${sectorid++}\n`;
                 ss += "\theightceiling = 0;\n"; // FIXME: Some sectors extends this height... I don't know why. You have to fix them manually
-                ss += "\ttexturefloor = \"floor\";\n";
-                ss += "\ttextureceiling = \"ceiling\";\n";
+                ss += "\ttexturefloor = \"drdc10\";\n";
+                ss += "\ttextureceiling = \"FLAT20\";\n";
                 ss += "}\n\n";
             }
         }
