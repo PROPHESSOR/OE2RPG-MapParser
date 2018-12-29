@@ -247,12 +247,10 @@ class Parser {
                 }
 
                 ss += "sidedef {\n";
-                ss += `\tsector = ${0};\n`;
                 ss += `\ttexturemiddle = "drdc${texmap[lines[i].walltex]}";\n`;
                 ss += "}\n\n";
 
                 ss += "sidedef {\n";
-                ss += `\tsector = ${0};\n`;
                 ss += `\ttexturemiddle = "drdc${texmap[lines[i].walltex]}";\n`;
                 ss += "\tscalex_mid = -1;\n";
                 ss += "\tscalex_top = -1;\n";
@@ -449,11 +447,11 @@ try {
 
     // main(process.argv[2] || "level03.bsp", process.argv[3] || "out.tm");
     {
-        const from = prompt("Введите полное имя .bsd файла");
+        const from = prompt("Введите полное имя .bsp файла");
         if (from) main(from, `${from}.ts`);
     }
     document.addEventListener("click", () => {
-        const from = prompt("Введите полное имя .bsd файла");
+        const from = prompt("Введите полное имя .bsp файла");
         if (from) main(from, `${from}.ts`);
     });
 } catch (e) {
