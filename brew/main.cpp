@@ -41,7 +41,12 @@ int main(int argc, char **argv) {
         return 1;
     }
 
-    FILE *f = fopen("intro.bsp", "rb");
+    if (argc < 2) {
+        printf("Usage: %s <path/to/file.bsp>", argv[0]);
+        exit(1);
+    }
+
+    FILE *f = fopen(argv[1], "rb");
 
     MapHeader header {};
     fread(&header, 1, sizeof(header), f);
@@ -125,7 +130,7 @@ int main(int argc, char **argv) {
                     q += 1;
                     printf("%d\n", q);
                 } else if(e.key.keysym.sym == SDLK_d) {
-                    q -= 1;
+                    if (q > 1) q -= 1;
                     printf("%d\n", q);
                 }
             }
