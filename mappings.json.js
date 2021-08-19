@@ -6,9 +6,12 @@ module.exports = {
     4: 4,
     5: 5,
     8: 8,
-    16: 11, // Check
+    16: 11,
     18: 10,
+    22: 11, // Interpolation
     23: 12,
+    24: 13, // Interpolation
+    25: 14,
     46: 39,
     47: 22,
     48: 23,
@@ -17,11 +20,11 @@ module.exports = {
     52: 26, // Interpolation
     53: 27,
     54: 28,
-    57: 29, // Interpolation
-    58: 30, // Interpolation
-    59: 31, // Interpolation
-    60: 32, // Interpolation
-    61: 33, // Interpolation
+    55: 29,
+    56: 30,
+    57: 31, // Interpolation
+    58: 32, // Interpolation
+    61: 35, // Interpolation
     62: 36,
     63: 35, // Interpolation
     64: 36, // Interpolation
@@ -33,5 +36,13 @@ module.exports = {
     70: 42,
     81: 43,
     82: 44,
-    83: 45
+    83: 45,
+    184: 46,
+    185: 47,
+    186: 49,
+    187: 50,
+    188: 51,
+    189: 52,
+    190: 53,
+    191: 54
 };
