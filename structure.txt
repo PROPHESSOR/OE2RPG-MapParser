@@ -1,0 +1,72 @@
+// Copyright (c) Erick194
+// 
+// This software is released under the MIT License.
+// https://opensource.org/licenses/MIT
+
+byte 	MagicID;	//siempre 0x0A
+int 	UNk1;
+short	UNk2;
+byte 	FloorColor[3];
+byte 	CeilingColor[3];
+byte 	IntroColor[3];
+byte 	LevelIdx;
+short	PlayerPosition;
+byte 	PlayerAngle;
+short	UNk3;
+byte 	UNk4;
+byte 	UNk5;
+byte 	UNk6;
+
+short	Nodes; // max 400 nodes
+byte	NodeData*Nodes;
+	{
+	byte a, b, c, d;
+	short e, f, g;
+	}size 10
+
+short	Lines;
+byte	LineData*Lines;
+	{
+	byte v1x, v1y;
+	byte v2x, v2y;
+	byte textureIDLower;
+	byte textureIDUpper;
+	int flags;
+	}size 10
+
+short	Things;
+short	Textra;
+byte	ThingData*(Things+Textra);
+	count = (Things+Textra);
+	if(count >= Things)
+	{ThingDataA
+	byte x, y;
+	byte c; //c = inputbyte -32;??
+	byte type;
+	byte flags1;
+	short flags2;
+	}size 7
+	else
+	{ThingDataB
+	byte x, y;
+	byte type;
+	short flags;
+	}size 5
+
+short	Interaction;
+byte	InteractionData*Interaction;
+	read loop short data * Interaction count;
+	read loop int data * Interaction count, again;
+
+short	Unk;// Action script??
+byte	UnkData*Unk;
+	{
+	byte a;
+	int b, c;
+	}size 9
+
+byte 	Blockmap[512];
+
+byte 	FloorID[1024];
+
+byte 	CeilingId[1024];
