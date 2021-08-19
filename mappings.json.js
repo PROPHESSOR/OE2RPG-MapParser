@@ -11,10 +11,13 @@ module.exports = {
     9: 9,
     16: 11,
     18: 10,
+    19: 11,
     22: 11, // Interpolation
     23: 12,
     24: 13, // Interpolation
     25: 14,
+    26: 15, // Interpolation
+    27: 16,
     43: 19,
     44: 20,
     45: 21, // Interpolation
@@ -30,9 +33,11 @@ module.exports = {
     56: 30,
     57: 31, // Interpolation
     58: 32, // Interpolation
-    61: 35, // Interpolation
+    59: 33, // Interpolation
+    60: 34,
+    61: 39, // Interpolation
     62: 36,
-    63: 35, // Interpolation
+    63: 37,
     64: 36, // Interpolation
     65: 37, // Interpolation
     66: 38,
