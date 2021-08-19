@@ -257,8 +257,10 @@ class Parser {
             ss += `sidedef { // ${sideid}\n`;
             ss += `comment = "isDoubleHeight ${isDoubleHeight}";\n`;
             ss += `\tsector = ${isDoubleHeight ? 1 : 0};\n`;
-            if (isDoubleHeight)
-                ss += `\ttextureupper = "${getTexture(line.textureUpper)}";\n`;
+            if (isDoubleHeight) {
+                ss += `\ttexturetop = "${getTexture(line.textureUpper)}";\n`;
+                ss += `\tcomment = "${getTexture(line.textureUpper)}";\n`;
+            }
             ss += `\ttexturemiddle = "${getTexture(line.textureLower)}";\n`;
             ss += "}\n\n";
 
