@@ -36,25 +36,7 @@ class Parser {
     }
 
     getMappings() {
-        const mf = fs.readFileSync("mappings.bin");
-
-        // mfh.read(reinterpret_cast<char*>(&mh), sizeof(mh));
-        for (let i = 0; i < 4; i++) mh[i] = mf.readUInt32LE(i * 4);
-
-        // mfh.ignore(8 * mh.group1size + 8 * mh.group2size);
-        const offset = 16 + (8 * mh[0]) + (8 * mh[1]);
-
-        // texmap = new uint16_t[mh.group3size];
-        const texmap = [];
-
-        // mfh.read(reinterpret_cast<char*>(texmap), sizeof(uint16_t) * mh.group3size);
-        for (let i = 0; i < mh[2]; i++) {
-            texmap.push(mf.readUInt16LE(offset + (i * 2)));
-        }
-
-        // delete mf;
-
-        return texmap;
+        return require('./mappings.json.js');
     }
 
     parseMap(from) {
@@ -221,6 +203,11 @@ class Parser {
         ss += "\ttexturefloor = \"floor\";\n";
         ss += "\ttextureceiling = \"ceiling\";\n";
         ss += "}\n\n";
+        ss += "sector {\n";
+        ss += "\theightceiling = 128;\n";
+        ss += "\ttexturefloor = \"floor\";\n";
+        ss += "\ttextureceiling = \"ceiling\";\n";
+        ss += "}\n\n";
 
         ss += "thing { // Player Start\n";
         ss += `x=${((bspheader.playerstart % 32) * 64) + 32}.000;`;
@@ -251,22 +238,35 @@ class Parser {
 
         const isVertical = (x1, x2) => !(x1 - x2);
 
-        // vertexes
+        const getTexture = id => texmap[id] !== undefined ? `WALL${texmap[id]}` : `UID${id}`;
+
+
+
+        // lines
         for (let i = 0; i < count; i++) {
             // if (texmap[lines[i].walltex] >= 10) {
-                const v0 = findVertex(lines[i].x1 * 8, (256 - lines[i].y1) * 8);
-                const v1 = findVertex(lines[i].x0 * 8, (256 - lines[i].y0) * 8);
+            const line = lines[i];
+            const v0 = findVertex(line.x1 * 8, (256 - line.y1) * 8);
+            const v1 = findVertex(line.x0 * 8, (256 - line.y0) * 8);
 
-                ss += `sidedef { // ${sideid}\n`;
-                ss += "\tsector = 0;\n";
-                ss += `\ttexturemiddle = "drdc${texmap[lines[i].walltex]}";\n`;
-                ss += "}\n\n";
+            const isDoubleHeight = line.flags & 0b10000000000000000; // line.textureUpper !== line.textureLower;
 
-                ss += "linedef {\n";
-                ss += `\tv2 = ${v0};\n`;
-                ss += `\tv1 = ${v1};\n`;
-                ss += `\tsidefront = ${sideid++};\n`;
-                ss += "}\n\n";
+            console.log('line', sideid, getTexture(line.textureUpper), getTexture(line.textureLower), line.flags.toString(2), !!(line.flags & 0b10000000000000000));
+
+
+            ss += `sidedef { // ${sideid}\n`;
+            ss += `comment = "isDoubleHeight ${isDoubleHeight}";\n`;
+            ss += `\tsector = ${isDoubleHeight ? 1 : 0};\n`;
+            if (isDoubleHeight)
+                ss += `\ttextureupper = "${getTexture(line.textureUpper)}";\n`;
+            ss += `\ttexturemiddle = "${getTexture(line.textureLower)}";\n`;
+            ss += "}\n\n";
+
+            ss += "linedef {\n";
+            ss += `\tv2 = ${v0};\n`;
+            ss += `\tv1 = ${v1};\n`;
+            ss += `\tsidefront = ${sideid++};\n`;
+            ss += "}\n\n";
             // }
         }
 
@@ -340,89 +340,89 @@ class Parser {
         }
 
         // doors
-        for (let i = 0; i < count; i++) {
-            if (texmap[lines[i].walltex] < 10) {
-                let v0, v1, v2, v3;
+        // for (let i = 0; i < count; i++) {
+        //     if (texmap[lines[i].walltex] < 10) {
+        //         let v0, v1, v2, v3;
 
-                if (isVertical(lines[i].x0, lines[i].x1)) {
-                    v0 = findVertex((lines[i].x1 * 8) - 8, (256 - lines[i].y1) * 8);
-                    v1 = findVertex((lines[i].x0 * 8) - 8, (256 - lines[i].y0) * 8);
-                    v2 = findVertex((lines[i].x0 * 8) + 8, (256 - lines[i].y0) * 8);
-                    v3 = findVertex((lines[i].x1 * 8) + 8, (256 - lines[i].y1) * 8);
-                } else {
-                    v0 = findVertex(lines[i].x1 * 8, ((256 - lines[i].y1) * 8) - 8);
-                    v1 = findVertex(lines[i].x0 * 8, ((256 - lines[i].y0) * 8) - 8);
-                    v2 = findVertex(lines[i].x0 * 8, ((256 - lines[i].y0) * 8) + 8);
-                    v3 = findVertex(lines[i].x1 * 8, ((256 - lines[i].y1) * 8) + 8);
-                }
+        //         if (isVertical(lines[i].x0, lines[i].x1)) {
+        //             v0 = findVertex((lines[i].x1 * 8) - 8, (256 - lines[i].y1) * 8);
+        //             v1 = findVertex((lines[i].x0 * 8) - 8, (256 - lines[i].y0) * 8);
+        //             v2 = findVertex((lines[i].x0 * 8) + 8, (256 - lines[i].y0) * 8);
+        //             v3 = findVertex((lines[i].x1 * 8) + 8, (256 - lines[i].y1) * 8);
+        //         } else {
+        //             v0 = findVertex(lines[i].x1 * 8, ((256 - lines[i].y1) * 8) - 8);
+        //             v1 = findVertex(lines[i].x0 * 8, ((256 - lines[i].y0) * 8) - 8);
+        //             v2 = findVertex(lines[i].x0 * 8, ((256 - lines[i].y0) * 8) + 8);
+        //             v3 = findVertex(lines[i].x1 * 8, ((256 - lines[i].y1) * 8) + 8);
+        //         }
 
-                ss += `sidedef { // ${sideid}\n`;
-                ss += `\ttexturetop = "drdc${texmap[lines[i].walltex] || 0}";\n`;
-                ss += `\tsector = ${sectorid};\n`;
-                ss += "}\n\n";
+        //         ss += `sidedef { // ${sideid}\n`;
+        //         ss += `\ttexturetop = "WALL${texmap[lines[i].textureLower] || 0}";\n`;
+        //         ss += `\tsector = ${sectorid};\n`;
+        //         ss += "}\n\n";
 
-                ss += "linedef {\n";
-                ss += `\tv2 = ${v0};\n`;
-                ss += `\tv1 = ${v1};\n`;
-                ss += `\tsidefront = ${sideid++};\n`;
-                ss += "\tplayeruse = true;\n";
-                ss += "\trepeatspecial = true;\n";
-                ss += "\tspecial = 80;\n";
-                ss += "\targ0 = 3002;\n";
-                ss += "\tcomment = \"door\";\n";
-                ss += "}\n\n";
+        //         ss += "linedef {\n";
+        //         ss += `\tv2 = ${v0};\n`;
+        //         ss += `\tv1 = ${v1};\n`;
+        //         ss += `\tsidefront = ${sideid++};\n`;
+        //         ss += "\tplayeruse = true;\n";
+        //         ss += "\trepeatspecial = true;\n";
+        //         ss += "\tspecial = 80;\n";
+        //         ss += "\targ0 = 3002;\n";
+        //         ss += "\tcomment = \"door\";\n";
+        //         ss += "}\n\n";
 
-                ss += `sidedef { // ${sideid}\n`;
-                ss += `\ttexturetop = "drdc${texmap[lines[i].walltex] || 0}";\n`;
-                ss += `\tsector = ${sectorid};\n`;
-                ss += "\tscalex_mid = -1;\n";
-                ss += "\tscalex_top = -1;\n";
-                ss += "}\n\n";
-
-
-                ss += "linedef {\n";
-                ss += `\tv2 = ${v2};\n`;
-                ss += `\tv1 = ${v3};\n`;
-                ss += `\tsidefront = ${sideid++};\n`;
-                ss += "\tplayeruse = true;\n";
-                ss += "\trepeatspecial = true;\n";
-                ss += "\tspecial = 80;\n";
-                ss += "\targ0 = 3002;\n";
-                ss += "\tcomment = \"door\";\n";
-                ss += "}\n\n";
-
-                ss += `sidedef { // ${sideid}\n`;
-                ss += `\ttexturemiddle = "drdc10";\n`;
-                ss += `\tsector = ${sectorid};\n`;
-                ss += "}\n\n";
+        //         ss += `sidedef { // ${sideid}\n`;
+        //         ss += `\ttexturetop = "WALL${texmap[lines[i].textureLower] || 0}";\n`;
+        //         ss += `\tsector = ${sectorid};\n`;
+        //         ss += "\tscalex_mid = -1;\n";
+        //         ss += "\tscalex_top = -1;\n";
+        //         ss += "}\n\n";
 
 
-                ss += "linedef {\n";
-                ss += `\tv2 = ${v0};\n`;
-                ss += `\tv1 = ${v3};\n`;
-                ss += `\tsidefront = ${sideid++};\n`;
-                ss += "}\n\n";
+        //         ss += "linedef {\n";
+        //         ss += `\tv2 = ${v2};\n`;
+        //         ss += `\tv1 = ${v3};\n`;
+        //         ss += `\tsidefront = ${sideid++};\n`;
+        //         ss += "\tplayeruse = true;\n";
+        //         ss += "\trepeatspecial = true;\n";
+        //         ss += "\tspecial = 80;\n";
+        //         ss += "\targ0 = 3002;\n";
+        //         ss += "\tcomment = \"door\";\n";
+        //         ss += "}\n\n";
 
-                ss += `sidedef { // ${sideid}\n`;
-                ss += `\ttexturemiddle = "drdc10";\n`;
-                ss += `\tsector = ${sectorid};\n`;
-                ss += "\tscalex_top = -1;\n";
-                ss += "}\n\n";
+        //         ss += `sidedef { // ${sideid}\n`;
+        //         ss += `\ttexturemiddle = "drdc10";\n`;
+        //         ss += `\tsector = ${sectorid};\n`;
+        //         ss += "}\n\n";
 
-                ss += "linedef {\n";
-                ss += `\tv2 = ${v1};\n`;
-                ss += `\tv1 = ${v2};\n`;
-                ss += `\tsidefront = ${sideid++};\n`;
-                ss += "\tcomment = \"door side\";\n";
-                ss += "}\n\n";
 
-                ss += `sector { // ${sectorid++}\n`;
-                ss += "\theightceiling = 0;\n"; // FIXME: Some sectors extends this height... I don't know why. You have to fix them manually
-                ss += "\ttexturefloor = \"drdc10\";\n";
-                ss += "\ttextureceiling = \"FLAT20\";\n";
-                ss += "}\n\n";
-            }
-        }
+        //         ss += "linedef {\n";
+        //         ss += `\tv2 = ${v0};\n`;
+        //         ss += `\tv1 = ${v3};\n`;
+        //         ss += `\tsidefront = ${sideid++};\n`;
+        //         ss += "}\n\n";
+
+        //         ss += `sidedef { // ${sideid}\n`;
+        //         ss += `\ttexturemiddle = "drdc10";\n`;
+        //         ss += `\tsector = ${sectorid};\n`;
+        //         ss += "\tscalex_top = -1;\n";
+        //         ss += "}\n\n";
+
+        //         ss += "linedef {\n";
+        //         ss += `\tv2 = ${v1};\n`;
+        //         ss += `\tv1 = ${v2};\n`;
+        //         ss += `\tsidefront = ${sideid++};\n`;
+        //         ss += "\tcomment = \"door side\";\n";
+        //         ss += "}\n\n";
+
+        //         ss += `sector { // ${sectorid++}\n`;
+        //         ss += "\theightceiling = 0;\n"; // FIXME: Some sectors extends this height... I don't know why. You have to fix them manually
+        //         ss += "\ttexturefloor = \"drdc10\";\n";
+        //         ss += "\ttextureceiling = \"FLAT20\";\n";
+        //         ss += "}\n\n";
+        //     }
+        // }
 
         let vs = "";
         for (const vertex of vertices) {
