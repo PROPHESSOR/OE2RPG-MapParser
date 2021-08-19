@@ -110,11 +110,9 @@ class Parser {
             lines.push(line);
         }
 
-        console.log(lines);
-
         const things = this.parseThings(file);
 
-        const decals = this.parseDecals(things);
+        const decals = []; // this.parseDecals(things);
 
         return {
             lines,
@@ -126,10 +124,11 @@ class Parser {
     }
 
     parseThings(file = new ByteTools()) {
-        const count = file.readUInt16LE();
+        const thingsCount = file.readUInt16LE();
+        const extraCount = file.readUInt16LE();
 
         const things = [];
-        for (let i = 0; i < count; i++) {
+        for (let i = 0; i < thingsCount; i++) {
             const thing = {
                 "x": file.readUInt8(),
                 "y": file.readUInt8(),
@@ -139,6 +138,20 @@ class Parser {
 
             things.push(thing);
         }
+
+        for (let i = 0; i < extraCount; i++) {
+            const thing = {
+                "x": file.readUInt8(),
+                "y": file.readUInt8(),
+                "c": file.readUInt8(),
+                "id": file.readUInt8(),
+                "flags1": file.readUInt8(),
+                "flags2": file.readUInt16LE()
+            };
+
+            things.push(thing);
+        }
+
         return things;
     }
 
