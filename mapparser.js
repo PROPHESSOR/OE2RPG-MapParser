@@ -249,25 +249,39 @@ class Parser {
             const v0 = findVertex(line.x1 * 8, (256 - line.y1) * 8);
             const v1 = findVertex(line.x0 * 8, (256 - line.y0) * 8);
 
-            const isDoubleHeight = line.flags & 0b10000000000000000; // line.textureUpper !== line.textureLower;
+            const isDoubleHeight = Boolean(line.flags & 0b10000000000000000); // line.textureUpper !== line.textureLower;
 
             console.log('line', sideid, getTexture(line.textureUpper), getTexture(line.textureLower), line.flags.toString(2), !!(line.flags & 0b10000000000000000));
 
+            const comment = {
+                id: i,
+                double: isDoubleHeight,
+                flags: line.flags,
+                x0: line.x0,
+                y0: line.y0,
+                x1: line.x1,
+                y1: line.y1,
+                tl: getTexture(line.textureLower),
+                tu: getTexture(line.textureUpper),
+                tlid: line.textureLower,
+                tuid: line.textureUpper,
+            }
 
             ss += `sidedef { // ${sideid}\n`;
             ss += `comment = "isDoubleHeight ${isDoubleHeight}";\n`;
             ss += `\tsector = ${isDoubleHeight ? 1 : 0};\n`;
             if (isDoubleHeight) {
                 ss += `\ttexturetop = "${getTexture(line.textureUpper)}";\n`;
-                ss += `\tcomment = "${getTexture(line.textureUpper)}";\n`;
             }
             ss += `\ttexturemiddle = "${getTexture(line.textureLower)}";\n`;
+            ss += `\tcomment = ${JSON.stringify(JSON.stringify(comment))};\n`;
             ss += "}\n\n";
 
             ss += "linedef {\n";
             ss += `\tv2 = ${v0};\n`;
             ss += `\tv1 = ${v1};\n`;
             ss += `\tsidefront = ${sideid++};\n`;
+            ss += `\tcomment = ${JSON.stringify(JSON.stringify(comment))};\n`;
             ss += "}\n\n";
             // }
         }
@@ -316,30 +330,30 @@ class Parser {
 
         // decals
 
-        for (const decal of decals) {
-            const v0 = findVertex(decal.x0, (2048 - decal.y0));
-            const v1 = findVertex(decal.x1, (2048 - decal.y1));
+        // for (const decal of decals) {
+        //     const v0 = findVertex(decal.x0, (2048 - decal.y0));
+        //     const v1 = findVertex(decal.x1, (2048 - decal.y1));
 
-            ss += "sidedef {\n";
-            ss += "\tsector = 0;\n";
-            ss += `\ttexturemiddle = "${DECALS[decal.id]}";\n`;
-            ss += "}\n\n";
+        //     ss += "sidedef {\n";
+        //     ss += "\tsector = 0;\n";
+        //     ss += `\ttexturemiddle = "${DECALS[decal.id]}";\n`;
+        //     ss += "}\n\n";
 
-            ss += "sidedef {\n";
-            ss += "\tsector = 0;\n";
-            ss += `\ttexturemiddle = "${DECALS[decal.id]}";\n`;
-            ss += "}\n\n";
+        //     ss += "sidedef {\n";
+        //     ss += "\tsector = 0;\n";
+        //     ss += `\ttexturemiddle = "${DECALS[decal.id]}";\n`;
+        //     ss += "}\n\n";
 
-            ss += "linedef {\n";
-            ss += `\tv1 = ${v0};\n`;
-            ss += `\tv2 = ${v1};\n`;
-            ss += `\tsidefront = ${sideid++};\n`;
-            ss += `\tsideback = ${sideid++};\n`;
-            ss += "\ttwosided = true;\n";
-            ss += "\tblocking = true;\n";
-            ss += "\timpassable = true;\n";
-            ss += "}\n\n";
-        }
+        //     ss += "linedef {\n";
+        //     ss += `\tv1 = ${v0};\n`;
+        //     ss += `\tv2 = ${v1};\n`;
+        //     ss += `\tsidefront = ${sideid++};\n`;
+        //     ss += `\tsideback = ${sideid++};\n`;
+        //     ss += "\ttwosided = true;\n";
+        //     ss += "\tblocking = true;\n";
+        //     ss += "\timpassable = true;\n";
+        //     ss += "}\n\n";
+        // }
 
         // doors
         // for (let i = 0; i < count; i++) {
