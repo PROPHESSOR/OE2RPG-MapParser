@@ -99,7 +99,7 @@ class Parser {
 
         const things = this.parseThings(file);
 
-        const decals = []; // this.parseDecals(things);
+        const decals = this.parseDecals(things);
 
         return {
             lines,
@@ -187,14 +187,19 @@ class Parser {
                 y1 = (thing.y * 8 - isNotFence);
             }
 
-            decals.push({
+            const decal = {
                 "id": thing.id,
-                "texture": DECALS[thing.id],
                 x0,
                 y0,
                 x1,
-                y1
-            });
+                y1,
+                flags1: thing.flags1 || thing.flags || 0,
+                flags2: thing.flags2 || 0
+            };
+
+            decal.texture = typeof DECALS[thing.id] === 'function' ? DECALS[thing.id](decal) : DECALS[thing.id],
+
+            decals.push(decal);
         }
         return decals;
     }
@@ -218,7 +223,7 @@ class Parser {
         ss += `x=${((bspheader.playerstart % 32) * 64) + 32}.000;`;
         ss += `y=${((32 - Math.floor(bspheader.playerstart / 32)) * 64) - 32}.000;`;
         ss += "type=1;";
-        ss += `angle=${90 * bspheader.playerrotation};`;
+        ss += `angle=${90 * ((bspheader.playerrotation + 1) % 4)};`;
         ss += "coop=true;";
         ss += "dm=true;";
         ss += "single=true;";
@@ -310,7 +315,7 @@ class Parser {
                 ss += `\ttype = ${THINGS.notifier};\n`;
                 ss += `\tx = ${things[i].x * 8};\n`;
                 ss += `\ty = ${(256 - things[i].y) * 8};\n`;
-                ss += `\tcomment = "Unknown thing ${things[i].id}";\n`;
+                ss += `\tcomment = "Unknown thing ${things[i].id} ${(things[i].flags1 || things[i].flags || 0).toString(2)} ${(things[i].flags2 || 0).toString(2)}";\n`;
             }
 
             ss += "\tskill1 = true;\n";
@@ -333,32 +338,32 @@ class Parser {
             ss += "}\n\n";
         }
 
-        // decals
+        // Generate decals
+        for (const decal of decals) {
+            const v0 = findVertex(decal.x0, (2048 - decal.y0));
+            const v1 = findVertex(decal.x1, (2048 - decal.y1));
 
-        // for (const decal of decals) {
-        //     const v0 = findVertex(decal.x0, (2048 - decal.y0));
-        //     const v1 = findVertex(decal.x1, (2048 - decal.y1));
+            ss += "sidedef {\n";
+            ss += "\tsector = 0;\n";
+            ss += `\ttexturemiddle = "${decal.texture}";\n`;
+            ss += "}\n\n";
 
-        //     ss += "sidedef {\n";
-        //     ss += "\tsector = 0;\n";
-        //     ss += `\ttexturemiddle = "${DECALS[decal.id]}";\n`;
-        //     ss += "}\n\n";
+            ss += "sidedef {\n";
+            ss += "\tsector = 0;\n";
+            ss += `\ttexturemiddle = "${decal.texture}";\n`;
+            ss += "}\n\n";
 
-        //     ss += "sidedef {\n";
-        //     ss += "\tsector = 0;\n";
-        //     ss += `\ttexturemiddle = "${DECALS[decal.id]}";\n`;
-        //     ss += "}\n\n";
-
-        //     ss += "linedef {\n";
-        //     ss += `\tv1 = ${v0};\n`;
-        //     ss += `\tv2 = ${v1};\n`;
-        //     ss += `\tsidefront = ${sideid++};\n`;
-        //     ss += `\tsideback = ${sideid++};\n`;
-        //     ss += "\ttwosided = true;\n";
-        //     ss += "\tblocking = true;\n";
-        //     ss += "\timpassable = true;\n";
-        //     ss += "}\n\n";
-        // }
+            ss += "linedef {\n";
+            ss += `\tv1 = ${v0};\n`;
+            ss += `\tv2 = ${v1};\n`;
+            // ss += `\tcomment = ${JSON.stringify(JSON.stringify([decal.flags1.toString(2), decal.flags2.toString(2)]))};\n`
+            ss += `\tsidefront = ${sideid++};\n`;
+            ss += `\tsideback = ${sideid++};\n`;
+            ss += "\ttwosided = true;\n";
+            ss += "\tblocking = true;\n";
+            ss += "\timpassable = true;\n";
+            ss += "}\n\n";
+        }
 
         // Generate doors
         // for (let i = 0; i < count; i++) {
