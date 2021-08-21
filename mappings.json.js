@@ -9,17 +9,8 @@ module.exports = {
     7: 7,
     8: 8,
     9: 9,
-    16: 11,
-    18: 10,
-    19: 11,
-    22: 11, // Interpolation
-    23: 12,
-    24: 13, // Interpolation
-    25: 14,
-    26: 15, // Interpolation
-    27: 16,
-    28: 17,
-    29: 18, // Interpolation
+    16: 0,
+    18: 0,
     43: 19,
     44: 20,
     45: 21, // Interpolation

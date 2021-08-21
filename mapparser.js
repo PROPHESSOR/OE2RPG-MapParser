@@ -19,11 +19,6 @@ const Config = {
 };
 const mh = [];
 
-// Used to generate doors instead of just lines
-const DOORS_TEXTURE_IDS = [
-    9, 18, 28, 16, 23, 25, 27
-];
-
 class Parser {
     constructor(from, to) {
         this.from = from;
@@ -223,7 +218,7 @@ class Parser {
         ss += `x=${((bspheader.playerstart % 32) * 64) + 32}.000;`;
         ss += `y=${((32 - Math.floor(bspheader.playerstart / 32)) * 64) - 32}.000;`;
         ss += "type=1;";
-        ss += `angle=${90 * ((bspheader.playerrotation + 1) % 4)};`;
+        ss += `angle=${90 * ((bspheader.playerrotation + 3) % 4)};`;
         ss += "coop=true;";
         ss += "dm=true;";
         ss += "single=true;";
@@ -256,13 +251,11 @@ class Parser {
         for (let i = 0; i < count; i++) {
             const line = lines[i];
 
-            // Doors will be generated later
-            if (DOORS_TEXTURE_IDS.includes(line.textureLower)) continue;
-
             const v0 = findVertex(line.x1 * 8, (256 - line.y1) * 8);
             const v1 = findVertex(line.x0 * 8, (256 - line.y0) * 8);
 
-            const isDoubleHeight = Boolean(line.flags & 0b10000000000000000); // line.textureUpper !== line.textureLower;
+            const isDoubleHeight = Boolean(line.flags & 0b10000000000000000);
+            const isTopOnly = Boolean(line.flags & 0b101); // top only and not impassable
 
             const comment = {
                 id: i,
@@ -281,10 +274,14 @@ class Parser {
             ss += `sidedef { // ${sideid}\n`;
             ss += `comment = "isDoubleHeight ${isDoubleHeight}";\n`;
             ss += `\tsector = ${isDoubleHeight ? 1 : 0};\n`;
-            if (isDoubleHeight) {
+            if (isDoubleHeight && !isTopOnly) {
                 ss += `\ttexturetop = "${getTexture(line.textureUpper)}";\n`;
             }
-            ss += `\ttexturemiddle = "${getTexture(line.textureLower)}";\n`;
+            if (!isTopOnly) {
+                ss += `\ttexturemiddle = "${getTexture(line.textureLower)}";\n`;
+            } else {
+                ss += `\ttexturemiddle = "${getTexture(line.textureUpper)}";\n`;
+            }
             ss += `\tcomment = ${JSON.stringify(JSON.stringify(comment))};\n`;
             ss += "}\n\n";
 
@@ -368,8 +365,6 @@ class Parser {
         // Generate doors
         // for (let i = 0; i < count; i++) {
         //     const line = lines[i];
-
-        //     if (!DOORS_TEXTURE_IDS.includes(line.textureLower)) continue;
 
         //     const isDoubleHeight = Boolean(line.flags & 0b10000000000000000); // line.textureUpper 
 
