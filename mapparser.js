@@ -19,6 +19,8 @@ const Config = {
 };
 const mh = [];
 
+const DOOR_IDS = [0];
+
 class Parser {
     constructor(from, to) {
         this.from = from;
@@ -241,7 +243,7 @@ class Parser {
             return vertices.length - 1;
         }
 
-        const isVertical = (x1, x2) => !(x1 - x2);
+        const isVertical = (x1, x2) => x1 === x2;
 
         const getTexture = id => texmap[id] !== undefined ? `WALL${texmap[id]}` : `UID${id}`;
 
@@ -337,6 +339,9 @@ class Parser {
 
         // Generate decals
         for (const decal of decals) {
+            // Doors will be generated later
+            if (DOOR_IDS.includes(decal.id)) continue;
+
             const v0 = findVertex(decal.x0, (2048 - decal.y0));
             const v1 = findVertex(decal.x1, (2048 - decal.y1));
 
@@ -363,94 +368,93 @@ class Parser {
         }
 
         // Generate doors
-        // for (let i = 0; i < count; i++) {
-        //     const line = lines[i];
+        for (const decal of decals) {
+            if (!DOOR_IDS.includes(decal.id)) continue;
 
-        //     const isDoubleHeight = Boolean(line.flags & 0b10000000000000000); // line.textureUpper 
+            const v00 = findVertex(decal.x0, (2048 - decal.y0));
+            const v01 = findVertex(decal.x1, (2048 - decal.y1));
 
-        //     let v0, v1, v2, v3;
+            let v0, v1, v2, v3;
 
-        //     if (isVertical(lines[i].x0, lines[i].x1)) {
-        //         v0 = findVertex((lines[i].x1 * 8) - 8, (256 - lines[i].y1) * 8);
-        //         v1 = findVertex((lines[i].x0 * 8) - 8, (256 - lines[i].y0) * 8);
-        //         v2 = findVertex((lines[i].x0 * 8) + 8, (256 - lines[i].y0) * 8);
-        //         v3 = findVertex((lines[i].x1 * 8) + 8, (256 - lines[i].y1) * 8);
-        //     } else {
-        //         v0 = findVertex(lines[i].x1 * 8, ((256 - lines[i].y1) * 8) - 8);
-        //         v1 = findVertex(lines[i].x0 * 8, ((256 - lines[i].y0) * 8) - 8);
-        //         v2 = findVertex(lines[i].x0 * 8, ((256 - lines[i].y0) * 8) + 8);
-        //         v3 = findVertex(lines[i].x1 * 8, ((256 - lines[i].y1) * 8) + 8);
-        //     }
+            if (isVertical(v00.x, v01.x)) {
+                v0 = findVertex((v01.x * 8) - 8, (256 - v01.y) * 8);
+                v1 = findVertex((v00.x * 8) - 8, (256 - v00.y) * 8);
+                v2 = findVertex((v00.x * 8) + 8, (256 - v00.y) * 8);
+                v3 = findVertex((v01.x * 8) + 8, (256 - v01.y) * 8);
+            } else {
+                v0 = findVertex(v01.x * 8, ((256 - v01.y) * 8) - 8);
+                v1 = findVertex(v00.x * 8, ((256 - v00.y) * 8) - 8);
+                v2 = findVertex(v00.x * 8, ((256 - v00.y) * 8) + 8);
+                v3 = findVertex(v01.x * 8, ((256 - v01.y) * 8) + 8);
+            }
 
-        //     // Front side
-        //     ss += `sidedef { // ${sideid}\n`;
-        //     ss += `\ttexturebottom = "${getTexture(line.textureLower)}";\n`;
-        //     if (isDoubleHeight) ss += `\ttexturetop = "${getTexture(line.textureUpper)}";\n`;
-        //     ss += `\tsector = ${sectorid};\n`;
-        //     ss += "}\n\n";
+            // Front side
+            ss += `sidedef { // ${sideid}\n`;
+            ss += `\ttexturebottom = "${decal.texture}";\n`;
+            ss += `\tsector = ${sectorid};\n`;
+            ss += "}\n\n";
 
-        //     ss += "linedef {\n";
-        //     ss += `\tv2 = ${v0};\n`;
-        //     ss += `\tv1 = ${v1};\n`;
-        //     ss += `\tsidefront = ${sideid++};\n`;
-        //     ss += `\tsideback = ${sideid++};\n`;
-        //     ss += "\tplayeruse = true;\n";
-        //     ss += "\trepeatspecial = true;\n";
-        //     ss += "\tspecial = 80;\n";
-        //     ss += "\targ0 = 3002;\n";
-        //     ss += "\tcomment = \"door\";\n";
-        //     ss += "\tdoublesided = true;\n";
-        //     ss += "}\n\n";
+            ss += "linedef {\n";
+            ss += `\tv2 = ${v0};\n`;
+            ss += `\tv1 = ${v1};\n`;
+            ss += `\tsidefront = ${sideid++};\n`;
+            ss += `\tsideback = ${sideid++};\n`;
+            ss += "\tplayeruse = true;\n";
+            ss += "\trepeatspecial = true;\n";
+            ss += "\tspecial = 80;\n";
+            ss += "\targ0 = 3002;\n";
+            ss += "\tcomment = \"door\";\n";
+            ss += "\tdoublesided = true;\n";
+            ss += "}\n\n";
 
-        //     // Back side
-        //     ss += `sidedef { // ${sideid}\n`;
-        //     ss += `\ttexturebottom = "${getTexture(line.textureLower)}";\n`;
-        //     if (isDoubleHeight) ss += `\ttexturetop = "${getTexture(line.textureUpper)}";\n`;
-        //     ss += `\tsector = ${sectorid};\n`;
-        //     ss += "\tscalex_mid = -1;\n";
-        //     ss += "\tscalex_top = -1;\n";
-        //     ss += "}\n\n";
+            // Back side
+            ss += `sidedef { // ${sideid}\n`;
+            ss += `\ttexturebottom = "${decal.texture}";\n`;
+            ss += `\tsector = ${sectorid};\n`;
+            ss += "\tscalex_mid = -1;\n";
+            ss += "\tscalex_top = -1;\n";
+            ss += "}\n\n";
 
-        //     ss += "linedef {\n";
-        //     ss += `\tv2 = ${v2};\n`;
-        //     ss += `\tv1 = ${v3};\n`;
-        //     ss += `\tsidefront = ${sideid++};\n`;
-        //     ss += `\tsideback = ${sideid++};\n`;
-        //     ss += "\tplayeruse = true;\n";
-        //     ss += "\trepeatspecial = true;\n";
-        //     ss += "\tspecial = 80;\n";
-        //     ss += "\targ0 = 3002;\n";
-        //     ss += "\tcomment = \"door\";\n";
-        //     ss += "\tdoublesided = true;\n";
-        //     ss += "}\n\n";
+            ss += "linedef {\n";
+            ss += `\tv2 = ${v2};\n`;
+            ss += `\tv1 = ${v3};\n`;
+            ss += `\tsidefront = ${sideid++};\n`;
+            ss += `\tsideback = ${sideid++};\n`;
+            ss += "\tplayeruse = true;\n";
+            ss += "\trepeatspecial = true;\n";
+            ss += "\tspecial = 80;\n";
+            ss += "\targ0 = 3002;\n";
+            ss += "\tcomment = \"door\";\n";
+            ss += "\tdoublesided = true;\n";
+            ss += "}\n\n";
 
-        //     // Side 1
-        //     // ss += `sidedef { // ${sideid}\n`;
-        //     // ss += `\ttexturemiddle = "WALL0";\n`;
-        //     // ss += `\tsector = ${sectorid};\n`;
-        //     // ss += "}\n\n";
+            // Side 1
+            // ss += `sidedef { // ${sideid}\n`;
+            // ss += `\ttexturemiddle = "WALL0";\n`;
+            // ss += `\tsector = ${sectorid};\n`;
+            // ss += "}\n\n";
 
-        //     // ss += "linedef {\n";
-        //     // ss += `\tv2 = ${v0};\n`;
-        //     // ss += `\tv1 = ${v3};\n`;
-        //     // ss += `\tsidefront = ${sideid};\n`;
-        //     // ss += "}\n\n";
+            // ss += "linedef {\n";
+            // ss += `\tv2 = ${v0};\n`;
+            // ss += `\tv1 = ${v3};\n`;
+            // ss += `\tsidefront = ${sideid};\n`;
+            // ss += "}\n\n";
 
-        //     // // Side 2
-        //     // ss += "linedef {\n";
-        //     // ss += `\tv2 = ${v2};\n`;
-        //     // ss += `\tv1 = ${v1};\n`;
-        //     // ss += `\tsidefront = ${sideid++};\n`;
-        //     // ss += "\tcomment = \"door side\";\n";
-        //     // ss += "}\n\n";
+            // // Side 2
+            // ss += "linedef {\n";
+            // ss += `\tv2 = ${v2};\n`;
+            // ss += `\tv1 = ${v1};\n`;
+            // ss += `\tsidefront = ${sideid++};\n`;
+            // ss += "\tcomment = \"door side\";\n";
+            // ss += "}\n\n";
 
-        //     ss += `sector { // ${sectorid++}\n`;
-        //     ss += "\theightceiling = 64;\n";
-        //     ss += "\theightfloor = 64;\n";
-        //     ss += "\ttexturefloor = \"WALL0\";\n";
-        //     ss += "\ttextureceiling = \"WALL0\";\n";
-        //     ss += "}\n\n";
-        // }
+            ss += `sector { // ${sectorid++}\n`;
+            ss += "\theightceiling = 64;\n";
+            ss += "\theightfloor = 64;\n";
+            ss += "\ttexturefloor = \"WALL0\";\n";
+            ss += "\ttextureceiling = \"WALL0\";\n";
+            ss += "}\n\n";
+        }
 
         let vs = "";
         for (const vertex of vertices) {
