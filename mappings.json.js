@@ -18,6 +18,8 @@ module.exports = {
     25: 14,
     26: 15, // Interpolation
     27: 16,
+    28: 17,
+    29: 18, // Interpolation
     43: 19,
     44: 20,
     45: 21, // Interpolation
