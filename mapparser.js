@@ -354,18 +354,19 @@ class Parser {
             ss += "}\n\n";
         }
 
-        const sectorDoorBack = 0;
-        ss += `sector { // ${sectorid++}\n`;
-        ss += "\theightceiling = 64;\n";
-        ss += "\theightfloor = 0;\n";
-        ss += "\ttexturefloor = \"WALL0\";\n";
-        ss += "\ttextureceiling = \"WALL0\";\n";
-        ss += "\tcomment = \"doorsector\";\n";
-        ss += "}\n\n";
 
         // Generate doors
         for (const line of lines) {
             if (!DOOR_IDS.includes(line.textureLower)) continue;
+
+            const sectorDoorBack = sectorid;
+            ss += `sector { // ${sectorid++}\n`;
+            ss += "\theightceiling = 64;\n";
+            ss += "\theightfloor = 64;\n";
+            ss += "\ttexturefloor = \"WALL0\";\n";
+            ss += "\ttextureceiling = \"WALL0\";\n";
+            ss += "\tcomment = \"doorsector\";\n";
+            ss += "}\n\n";
 
             let v0, v1, v2, v3;
 
@@ -402,14 +403,13 @@ class Parser {
             if (isDoubleHeight) {
                 ss += `\ttexturetop = "${getTexture(line.textureUpper)}";\n`;
             }
-            ss += `\ttexturemiddle = "${getTexture(line.textureLower)}";\n`;
+            ss += `\ttexturebottom = "${getTexture(line.textureLower)}";\n`;
             ss += `\tcomment = ${JSON.stringify(JSON.stringify(comment))};\n`;
             ss += "}\n\n";
 
             ss += "linedef {\n";
             ss += `\tv2 = ${v0};\n`;
             ss += `\tv1 = ${v1};\n`;
-            // ss += `\tsideback = ${sideid};\n`;
             ss += `\tsidefront = ${sideid++};\n`;
             ss += `\tcomment = ${JSON.stringify(JSON.stringify(comment))};\n`;
             ss += "\tplayeruse = true;\n";
@@ -424,14 +424,13 @@ class Parser {
             if (isDoubleHeight) {
                 ss += `\ttexturetop = "${getTexture(line.textureUpper)}";\n`;
             }
-            ss += `\ttexturemiddle = "${getTexture(line.textureLower)}";\n`;
+            ss += `\ttexturebottom = "${getTexture(line.textureLower)}";\n`;
             ss += `\tcomment = ${JSON.stringify(JSON.stringify(comment))};\n`;
             ss += "}\n\n";
 
             ss += "linedef {\n";
             ss += `\tv2 = ${v2};\n`;
             ss += `\tv1 = ${v3};\n`;
-            // ss += `\tsideback = ${sideid};\n`;
             ss += `\tsidefront = ${sideid++};\n`;
             ss += `\tcomment = ${JSON.stringify(JSON.stringify(comment))};\n`;
             ss += "\tplayeruse = true;\n";
