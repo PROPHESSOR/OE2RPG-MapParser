@@ -148,39 +148,23 @@ class Parser {
             let x0, y0, x1, y1;
             if (thing.flags & 32) { // east
                 x0 = (thing.x * 8 + isNotFence);
-                x0 = (thing.x * 8 + isNotFence);
-                y0 = (thing.y * 8 + 32);
-                y0 = (thing.y * 8 + 32);
+                y0 = (thing.y * 8 + 31);
                 x1 = (thing.x * 8 + isNotFence);
-                x1 = (thing.x * 8 + isNotFence);
-                y1 = (thing.y * 8 - 32);
-                y1 = (thing.y * 8 - 32);
+                y1 = (thing.y * 8 - 31);
             } else if (thing.flags & 64) { // west
                 x0 = (thing.x * 8 - isNotFence);
-                x0 = (thing.x * 8 - isNotFence);
-                y0 = (thing.y * 8 - 32);
-                y0 = (thing.y * 8 - 32);
+                y0 = (thing.y * 8 - 31);
                 x1 = (thing.x * 8 - isNotFence);
-                x1 = (thing.x * 8 - isNotFence);
-                y1 = (thing.y * 8 + 32);
-                y1 = (thing.y * 8 + 32);
+                y1 = (thing.y * 8 + 31);
             } else if (thing.flags & 16) { // south
-                x0 = (thing.x * 8 - 32);
-                x0 = (thing.x * 8 - 32);
+                x0 = (thing.x * 8 - 31);
                 y0 = (thing.y * 8 + isNotFence);
-                y0 = (thing.y * 8 + isNotFence);
-                x1 = (thing.x * 8 + 32);
-                x1 = (thing.x * 8 + 32);
-                y1 = (thing.y * 8 + isNotFence);
+                x1 = (thing.x * 8 + 31);
                 y1 = (thing.y * 8 + isNotFence);
             } else if (thing.flags & 8) { // north
-                x0 = (thing.x * 8 + 32);
-                x0 = (thing.x * 8 + 32);
+                x0 = (thing.x * 8 + 31);
                 y0 = (thing.y * 8 - isNotFence);
-                y0 = (thing.y * 8 - isNotFence);
-                x1 = (thing.x * 8 - 32);
-                x1 = (thing.x * 8 - 32);
-                y1 = (thing.y * 8 - isNotFence);
+                x1 = (thing.x * 8 - 31);
                 y1 = (thing.y * 8 - isNotFence);
             }
 
@@ -297,6 +281,8 @@ class Parser {
 
         // things
         for (let i = 0; i < things.length; i++) {
+            if (Object.keys(DECALS).includes(String(things[i].id))) continue;
+
             if (things[i].flags & 1) { // Will spawn
                 ss += "thing {\n";
                 ss += `\ttype = ${THINGS.mapspot};\n`;
@@ -398,7 +384,6 @@ class Parser {
             ss += `\tv2 = ${v0};\n`;
             ss += `\tv1 = ${v1};\n`;
             ss += `\tsidefront = ${sideid++};\n`;
-            ss += `\tsideback = ${sideid++};\n`;
             ss += "\tplayeruse = true;\n";
             ss += "\trepeatspecial = true;\n";
             ss += "\tspecial = 80;\n";
@@ -419,7 +404,6 @@ class Parser {
             ss += `\tv2 = ${v2};\n`;
             ss += `\tv1 = ${v3};\n`;
             ss += `\tsidefront = ${sideid++};\n`;
-            ss += `\tsideback = ${sideid++};\n`;
             ss += "\tplayeruse = true;\n";
             ss += "\trepeatspecial = true;\n";
             ss += "\tspecial = 80;\n";
