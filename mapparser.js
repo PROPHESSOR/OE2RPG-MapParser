@@ -354,12 +354,32 @@ class Parser {
             ss += "}\n\n";
         }
 
+        const sectorDoorBack = 0;
+        ss += `sector { // ${sectorid++}\n`;
+        ss += "\theightceiling = 64;\n";
+        ss += "\theightfloor = 0;\n";
+        ss += "\ttexturefloor = \"WALL0\";\n";
+        ss += "\ttextureceiling = \"WALL0\";\n";
+        ss += "\tcomment = \"doorsector\";\n";
+        ss += "}\n\n";
+
         // Generate doors
         for (const line of lines) {
             if (!DOOR_IDS.includes(line.textureLower)) continue;
 
-            const v0 = findVertex(line.x1 * 8, (256 - line.y1) * 8);
-            const v1 = findVertex(line.x0 * 8, (256 - line.y0) * 8);
+            let v0, v1, v2, v3;
+
+            if (isVertical(line.x0, line.x1)) {
+                v0 = findVertex((line.x1 * 8) - 8, (256 - line.y1) * 8);
+                v1 = findVertex((line.x0 * 8) - 8, (256 - line.y0) * 8);
+                v2 = findVertex((line.x0 * 8) + 8, (256 - line.y0) * 8);
+                v3 = findVertex((line.x1 * 8) + 8, (256 - line.y1) * 8);
+            } else {
+                v0 = findVertex(line.x1 * 8, ((256 - line.y1) * 8) - 8);
+                v1 = findVertex(line.x0 * 8, ((256 - line.y0) * 8) - 8);
+                v2 = findVertex(line.x0 * 8, ((256 - line.y0) * 8) + 8);
+                v3 = findVertex(line.x1 * 8, ((256 - line.y1) * 8) + 8);
+            }
 
             const isDoubleHeight = Boolean(line.flags & 0b10000000000000000);
 
@@ -378,10 +398,9 @@ class Parser {
 
             ss += `sidedef { // ${sideid}\n`;
             ss += `comment = "isDoor, isDoubleHeight ${isDoubleHeight}";\n`;
-            ss += `\tsector = ${isDoubleHeight ? 1 : 0};\n`;
+            ss += `\tsector = ${sectorDoorBack};\n`;
             if (isDoubleHeight) {
                 ss += `\ttexturetop = "${getTexture(line.textureUpper)}";\n`;
-                ss += `\toffsety = -64;\n`
             }
             ss += `\ttexturemiddle = "${getTexture(line.textureLower)}";\n`;
             ss += `\tcomment = ${JSON.stringify(JSON.stringify(comment))};\n`;
@@ -390,8 +409,69 @@ class Parser {
             ss += "linedef {\n";
             ss += `\tv2 = ${v0};\n`;
             ss += `\tv1 = ${v1};\n`;
-            ss += `\ttwosided = true;\n`;
-            ss += `\tsideback = ${sideid};\n`;
+            // ss += `\tsideback = ${sideid};\n`;
+            ss += `\tsidefront = ${sideid++};\n`;
+            ss += `\tcomment = ${JSON.stringify(JSON.stringify(comment))};\n`;
+            ss += "\tplayeruse = true;\n";
+            ss += "\trepeatspecial = true;\n";
+            ss += "\tspecial = 80;\n";
+            ss += "\targ0 = 3002;\n";
+            ss += "}\n\n";
+
+            ss += `sidedef { // ${sideid}\n`;
+            ss += `comment = "isDoor, isDoubleHeight ${isDoubleHeight}";\n`;
+            ss += `\tsector = ${sectorDoorBack};\n`;
+            if (isDoubleHeight) {
+                ss += `\ttexturetop = "${getTexture(line.textureUpper)}";\n`;
+            }
+            ss += `\ttexturemiddle = "${getTexture(line.textureLower)}";\n`;
+            ss += `\tcomment = ${JSON.stringify(JSON.stringify(comment))};\n`;
+            ss += "}\n\n";
+
+            ss += "linedef {\n";
+            ss += `\tv2 = ${v2};\n`;
+            ss += `\tv1 = ${v3};\n`;
+            // ss += `\tsideback = ${sideid};\n`;
+            ss += `\tsidefront = ${sideid++};\n`;
+            ss += `\tcomment = ${JSON.stringify(JSON.stringify(comment))};\n`;
+            ss += "\tplayeruse = true;\n";
+            ss += "\trepeatspecial = true;\n";
+            ss += "\tspecial = 80;\n";
+            ss += "\targ0 = 3002;\n";
+            ss += "}\n\n";
+
+            // Sides
+
+            ss += `sidedef { // ${sideid}\n`;
+            ss += `comment = "isDoor, isDoubleHeight ${isDoubleHeight}";\n`;
+            ss += `\tsector = ${sectorDoorBack};\n`;
+            if (isDoubleHeight) {
+                ss += `\ttexturetop = "${getTexture(line.textureUpper)}";\n`;
+            }
+            ss += `\ttexturebottom = "${getTexture(line.textureLower)}";\n`;
+            ss += `\tcomment = ${JSON.stringify(JSON.stringify(comment))};\n`;
+            ss += "}\n\n";
+
+            ss += "linedef {\n";
+            ss += `\tv2 = ${v0};\n`;
+            ss += `\tv1 = ${v3};\n`;
+            ss += `\tsidefront = ${sideid++};\n`;
+            ss += `\tcomment = ${JSON.stringify(JSON.stringify(comment))};\n`;
+            ss += "}\n\n";
+
+            ss += `sidedef { // ${sideid}\n`;
+            ss += `comment = "isDoor, isDoubleHeight ${isDoubleHeight}";\n`;
+            ss += `\tsector = ${sectorDoorBack};\n`;
+            if (isDoubleHeight) {
+                ss += `\ttexturetop = "${getTexture(line.textureUpper)}";\n`;
+            }
+            ss += `\ttexturebottom = "${getTexture(line.textureLower)}";\n`;
+            ss += `\tcomment = ${JSON.stringify(JSON.stringify(comment))};\n`;
+            ss += "}\n\n";
+
+            ss += "linedef {\n";
+            ss += `\tv2 = ${v2};\n`;
+            ss += `\tv1 = ${v1};\n`;
             ss += `\tsidefront = ${sideid++};\n`;
             ss += `\tcomment = ${JSON.stringify(JSON.stringify(comment))};\n`;
             ss += "}\n\n";
