@@ -148,23 +148,23 @@ class Parser {
             let x0, y0, x1, y1;
             if (thing.flags & 32) { // east
                 x0 = (thing.x * 8 + isNotFence);
-                y0 = (thing.y * 8 + 31);
+                y0 = (thing.y * 8 + 30);
                 x1 = (thing.x * 8 + isNotFence);
-                y1 = (thing.y * 8 - 31);
+                y1 = (thing.y * 8 - 30);
             } else if (thing.flags & 64) { // west
                 x0 = (thing.x * 8 - isNotFence);
-                y0 = (thing.y * 8 - 31);
+                y0 = (thing.y * 8 - 30);
                 x1 = (thing.x * 8 - isNotFence);
-                y1 = (thing.y * 8 + 31);
+                y1 = (thing.y * 8 + 30);
             } else if (thing.flags & 16) { // south
-                x0 = (thing.x * 8 - 31);
+                x0 = (thing.x * 8 - 30);
                 y0 = (thing.y * 8 + isNotFence);
-                x1 = (thing.x * 8 + 31);
+                x1 = (thing.x * 8 + 30);
                 y1 = (thing.y * 8 + isNotFence);
             } else if (thing.flags & 8) { // north
-                x0 = (thing.x * 8 + 31);
+                x0 = (thing.x * 8 + 30);
                 y0 = (thing.y * 8 - isNotFence);
-                x1 = (thing.x * 8 - 31);
+                x1 = (thing.x * 8 - 30);
                 y1 = (thing.y * 8 - isNotFence);
             }
 
@@ -348,97 +348,97 @@ class Parser {
             ss += `\tsidefront = ${sideid++};\n`;
             ss += `\tsideback = ${sideid++};\n`;
             ss += "\ttwosided = true;\n";
-            ss += "\tblocking = true;\n";
-            ss += "\timpassable = true;\n";
+            // ss += "\tblocking = true;\n";
+            // ss += "\timpassable = true;\n";
             ss += "}\n\n";
         }
 
         // Generate doors
-        for (const decal of decals) {
-            if (!DOOR_IDS.includes(decal.id)) continue;
+        // for (const decal of decals) {
+        //     if (!DOOR_IDS.includes(decal.id)) continue;
 
-            const v00 = findVertex(decal.x0, (2048 - decal.y0));
-            const v01 = findVertex(decal.x1, (2048 - decal.y1));
+        //     const v00 = findVertex(decal.x0, (2048 - decal.y0));
+        //     const v01 = findVertex(decal.x1, (2048 - decal.y1));
 
-            let v0, v1, v2, v3;
+        //     let v0, v1, v2, v3;
 
-            if (isVertical(v00.x, v01.x)) {
-                v0 = findVertex((v01.x * 8) - 8, (256 - v01.y) * 8);
-                v1 = findVertex((v00.x * 8) - 8, (256 - v00.y) * 8);
-                v2 = findVertex((v00.x * 8) + 8, (256 - v00.y) * 8);
-                v3 = findVertex((v01.x * 8) + 8, (256 - v01.y) * 8);
-            } else {
-                v0 = findVertex(v01.x * 8, ((256 - v01.y) * 8) - 8);
-                v1 = findVertex(v00.x * 8, ((256 - v00.y) * 8) - 8);
-                v2 = findVertex(v00.x * 8, ((256 - v00.y) * 8) + 8);
-                v3 = findVertex(v01.x * 8, ((256 - v01.y) * 8) + 8);
-            }
+        //     if (isVertical(v00.x, v01.x)) {
+        //         v0 = findVertex((v01.x * 8) - 8, (256 - v01.y) * 8);
+        //         v1 = findVertex((v00.x * 8) - 8, (256 - v00.y) * 8);
+        //         v2 = findVertex((v00.x * 8) + 8, (256 - v00.y) * 8);
+        //         v3 = findVertex((v01.x * 8) + 8, (256 - v01.y) * 8);
+        //     } else {
+        //         v0 = findVertex(v01.x * 8, ((256 - v01.y) * 8) - 8);
+        //         v1 = findVertex(v00.x * 8, ((256 - v00.y) * 8) - 8);
+        //         v2 = findVertex(v00.x * 8, ((256 - v00.y) * 8) + 8);
+        //         v3 = findVertex(v01.x * 8, ((256 - v01.y) * 8) + 8);
+        //     }
 
-            // Front side
-            ss += `sidedef { // ${sideid}\n`;
-            ss += `\ttexturebottom = "${decal.texture}";\n`;
-            ss += `\tsector = ${sectorid};\n`;
-            ss += "}\n\n";
+        //     // Front side
+        //     ss += `sidedef { // ${sideid}\n`;
+        //     ss += `\ttexturebottom = "${decal.texture}";\n`;
+        //     ss += `\tsector = ${sectorid};\n`;
+        //     ss += "}\n\n";
 
-            ss += "linedef {\n";
-            ss += `\tv2 = ${v0};\n`;
-            ss += `\tv1 = ${v1};\n`;
-            ss += `\tsidefront = ${sideid++};\n`;
-            ss += "\tplayeruse = true;\n";
-            ss += "\trepeatspecial = true;\n";
-            ss += "\tspecial = 80;\n";
-            ss += "\targ0 = 3002;\n";
-            ss += "\tcomment = \"door\";\n";
-            ss += "\tdoublesided = true;\n";
-            ss += "}\n\n";
+        //     ss += "linedef {\n";
+        //     ss += `\tv2 = ${v0};\n`;
+        //     ss += `\tv1 = ${v1};\n`;
+        //     ss += `\tsidefront = ${sideid++};\n`;
+        //     ss += "\tplayeruse = true;\n";
+        //     ss += "\trepeatspecial = true;\n";
+        //     ss += "\tspecial = 80;\n";
+        //     ss += "\targ0 = 3002;\n";
+        //     ss += "\tcomment = \"door\";\n";
+        //     ss += "\tdoublesided = true;\n";
+        //     ss += "}\n\n";
 
-            // Back side
-            ss += `sidedef { // ${sideid}\n`;
-            ss += `\ttexturebottom = "${decal.texture}";\n`;
-            ss += `\tsector = ${sectorid};\n`;
-            ss += "\tscalex_mid = -1;\n";
-            ss += "\tscalex_top = -1;\n";
-            ss += "}\n\n";
+        //     // Back side
+        //     ss += `sidedef { // ${sideid}\n`;
+        //     ss += `\ttexturebottom = "${decal.texture}";\n`;
+        //     ss += `\tsector = ${sectorid};\n`;
+        //     ss += "\tscalex_mid = -1;\n";
+        //     ss += "\tscalex_top = -1;\n";
+        //     ss += "}\n\n";
 
-            ss += "linedef {\n";
-            ss += `\tv2 = ${v2};\n`;
-            ss += `\tv1 = ${v3};\n`;
-            ss += `\tsidefront = ${sideid++};\n`;
-            ss += "\tplayeruse = true;\n";
-            ss += "\trepeatspecial = true;\n";
-            ss += "\tspecial = 80;\n";
-            ss += "\targ0 = 3002;\n";
-            ss += "\tcomment = \"door\";\n";
-            ss += "\tdoublesided = true;\n";
-            ss += "}\n\n";
+        //     ss += "linedef {\n";
+        //     ss += `\tv2 = ${v2};\n`;
+        //     ss += `\tv1 = ${v3};\n`;
+        //     ss += `\tsidefront = ${sideid++};\n`;
+        //     ss += "\tplayeruse = true;\n";
+        //     ss += "\trepeatspecial = true;\n";
+        //     ss += "\tspecial = 80;\n";
+        //     ss += "\targ0 = 3002;\n";
+        //     ss += "\tcomment = \"door\";\n";
+        //     ss += "\tdoublesided = true;\n";
+        //     ss += "}\n\n";
 
-            // Side 1
-            // ss += `sidedef { // ${sideid}\n`;
-            // ss += `\ttexturemiddle = "WALL0";\n`;
-            // ss += `\tsector = ${sectorid};\n`;
-            // ss += "}\n\n";
+        //     // Side 1
+        //     // ss += `sidedef { // ${sideid}\n`;
+        //     // ss += `\ttexturemiddle = "WALL0";\n`;
+        //     // ss += `\tsector = ${sectorid};\n`;
+        //     // ss += "}\n\n";
 
-            // ss += "linedef {\n";
-            // ss += `\tv2 = ${v0};\n`;
-            // ss += `\tv1 = ${v3};\n`;
-            // ss += `\tsidefront = ${sideid};\n`;
-            // ss += "}\n\n";
+        //     // ss += "linedef {\n";
+        //     // ss += `\tv2 = ${v0};\n`;
+        //     // ss += `\tv1 = ${v3};\n`;
+        //     // ss += `\tsidefront = ${sideid};\n`;
+        //     // ss += "}\n\n";
 
-            // // Side 2
-            // ss += "linedef {\n";
-            // ss += `\tv2 = ${v2};\n`;
-            // ss += `\tv1 = ${v1};\n`;
-            // ss += `\tsidefront = ${sideid++};\n`;
-            // ss += "\tcomment = \"door side\";\n";
-            // ss += "}\n\n";
+        //     // // Side 2
+        //     // ss += "linedef {\n";
+        //     // ss += `\tv2 = ${v2};\n`;
+        //     // ss += `\tv1 = ${v1};\n`;
+        //     // ss += `\tsidefront = ${sideid++};\n`;
+        //     // ss += "\tcomment = \"door side\";\n";
+        //     // ss += "}\n\n";
 
-            ss += `sector { // ${sectorid++}\n`;
-            ss += "\theightceiling = 64;\n";
-            ss += "\theightfloor = 64;\n";
-            ss += "\ttexturefloor = \"WALL0\";\n";
-            ss += "\ttextureceiling = \"WALL0\";\n";
-            ss += "}\n\n";
-        }
+        //     ss += `sector { // ${sectorid++}\n`;
+        //     ss += "\theightceiling = 64;\n";
+        //     ss += "\theightfloor = 64;\n";
+        //     ss += "\ttexturefloor = \"WALL0\";\n";
+        //     ss += "\ttextureceiling = \"WALL0\";\n";
+        //     ss += "}\n\n";
+        // }
 
         let vs = "";
         for (const vertex of vertices) {
