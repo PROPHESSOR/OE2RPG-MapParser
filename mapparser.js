@@ -19,7 +19,8 @@ const Config = {
 };
 const mh = [];
 
-const DOOR_IDS = [0];
+// Generate doors for lines with these lower texture ids
+const DOOR_IDS = [16, 18, 23, 27, 28];
 
 class Parser {
     constructor(from, to) {
@@ -234,8 +235,8 @@ class Parser {
 
 
         // lines
-        for (let i = 0; i < count; i++) {
-            const line = lines[i];
+        for (const line of lines) {
+            if (DOOR_IDS.includes(line.textureLower)) continue;
 
             const v0 = findVertex(line.x1 * 8, (256 - line.y1) * 8);
             const v1 = findVertex(line.x0 * 8, (256 - line.y0) * 8);
@@ -244,7 +245,6 @@ class Parser {
             const isTopOnly = Boolean(line.flags & 0b101); // top only and not impassable
 
             const comment = {
-                id: i,
                 double: isDoubleHeight,
                 flags: line.flags,
                 x0: line.x0,
@@ -280,27 +280,28 @@ class Parser {
         }
 
         // things
-        for (let i = 0; i < things.length; i++) {
-            if (Object.keys(DECALS).includes(String(things[i].id))) continue;
+        for (const thing of things) {
+            // Skip if it is a decal
+            if (Object.keys(DECALS).includes(String(thing.id))) continue;
 
-            if (things[i].flags & 1) { // Will spawn
+            if (thing.flags & 1) { // Will spawn
                 ss += "thing {\n";
                 ss += `\ttype = ${THINGS.mapspot};\n`;
-                ss += `\tx = ${things[i].x * 8};\n`;
-                ss += `\ty = ${(256 - things[i].y) * 8};\n`;
-                ss += `\tid = ${(things[i].x << 5) | things[i].y};\n`;
-                ss += `\tcomment = "Will spawn ${things[i].id}";\n`;
-            } else if (THINGS[things[i].id.toString()]) {
+                ss += `\tx = ${thing.x * 8};\n`;
+                ss += `\ty = ${(256 - thing.y) * 8};\n`;
+                ss += `\tid = ${(thing.x << 5) | thing.y};\n`;
+                ss += `\tcomment = "Will spawn ${thing.id}";\n`;
+            } else if (THINGS[thing.id.toString()]) {
                 ss += "thing {\n";
-                ss += `\ttype = ${THINGS[things[i].id.toString()]};\n`;
-                ss += `\tx = ${things[i].x * 8};\n`;
-                ss += `\ty = ${(256 - things[i].y) * 8};\n`;
+                ss += `\ttype = ${THINGS[thing.id.toString()]};\n`;
+                ss += `\tx = ${thing.x * 8};\n`;
+                ss += `\ty = ${(256 - thing.y) * 8};\n`;
             } else {
                 ss += "thing {\n";
                 ss += `\ttype = ${THINGS.notifier};\n`;
-                ss += `\tx = ${things[i].x * 8};\n`;
-                ss += `\ty = ${(256 - things[i].y) * 8};\n`;
-                ss += `\tcomment = "Unknown thing ${things[i].id} ${(things[i].flags1 || things[i].flags || 0).toString(2)} ${(things[i].flags2 || 0).toString(2)}";\n`;
+                ss += `\tx = ${thing.x * 8};\n`;
+                ss += `\ty = ${(256 - thing.y) * 8};\n`;
+                ss += `\tcomment = "Unknown thing ${thing.id} ${(thing.flags1 || thing.flags || 0).toString(2)} ${(thing.flags2 || 0).toString(2)}";\n`;
             }
 
             ss += "\tskill1 = true;\n";
@@ -326,7 +327,7 @@ class Parser {
         // Generate decals
         for (const decal of decals) {
             // Doors will be generated later
-            if (DOOR_IDS.includes(decal.id)) continue;
+            // if (DOOR_IDS.includes(decal.id)) continue;
 
             const v0 = findVertex(decal.x0, (2048 - decal.y0));
             const v1 = findVertex(decal.x1, (2048 - decal.y1));
@@ -354,6 +355,47 @@ class Parser {
         }
 
         // Generate doors
+        for (const line of lines) {
+            if (!DOOR_IDS.includes(line.textureLower)) continue;
+
+            const v0 = findVertex(line.x1 * 8, (256 - line.y1) * 8);
+            const v1 = findVertex(line.x0 * 8, (256 - line.y0) * 8);
+
+            const isDoubleHeight = Boolean(line.flags & 0b10000000000000000);
+
+            const comment = {
+                double: isDoubleHeight,
+                flags: line.flags,
+                x0: line.x0,
+                y0: line.y0,
+                x1: line.x1,
+                y1: line.y1,
+                tl: getTexture(line.textureLower),
+                tu: getTexture(line.textureUpper),
+                tlid: line.textureLower,
+                tuid: line.textureUpper,
+            }
+
+            ss += `sidedef { // ${sideid}\n`;
+            ss += `comment = "isDoor, isDoubleHeight ${isDoubleHeight}";\n`;
+            ss += `\tsector = ${isDoubleHeight ? 1 : 0};\n`;
+            if (isDoubleHeight) {
+                ss += `\ttexturetop = "${getTexture(line.textureUpper)}";\n`;
+                ss += `\toffsety = -64;\n`
+            }
+            ss += `\ttexturemiddle = "${getTexture(line.textureLower)}";\n`;
+            ss += `\tcomment = ${JSON.stringify(JSON.stringify(comment))};\n`;
+            ss += "}\n\n";
+
+            ss += "linedef {\n";
+            ss += `\tv2 = ${v0};\n`;
+            ss += `\tv1 = ${v1};\n`;
+            ss += `\ttwosided = true;\n`;
+            ss += `\tsideback = ${sideid};\n`;
+            ss += `\tsidefront = ${sideid++};\n`;
+            ss += `\tcomment = ${JSON.stringify(JSON.stringify(comment))};\n`;
+            ss += "}\n\n";
+        }
         // for (const decal of decals) {
         //     if (!DOOR_IDS.includes(decal.id)) continue;
 

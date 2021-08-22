@@ -9,8 +9,11 @@ module.exports = {
     7: 7,
     8: 8,
     9: 9,
-    16: 0,
-    18: 0,
+    16: 11, // Open door
+    18: 10, // Closed door
+    23: 12, // Guard door
+    27: 16, // Blue exit door
+    28: 17, // Yellow exit door
     43: 19,
     44: 20,
     45: 21, // Interpolation
