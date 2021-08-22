@@ -13,6 +13,10 @@ module.exports = {
     "19": 15552, // Orc Berserker
     "20": 15510, // Ratling
     "21": 15511, // Rat
+    "22": 15512, // Prowler
+    "23": 15520, // Mimic
+    "24": 15521, // Copper Mimic
+    "25": 15522, // Cobalt Mimic
     "26": 15530, // Behemoth
     "27": 15531, // Red Behemoth
     "29": 15600, // Wraith
@@ -21,13 +25,21 @@ module.exports = {
     "32": 15540, // Oak
     "33": 15541, // Blood Oak
     "34": 15542, // Sawtooth Oak
+    "35": 15550, // Shadow
+    "36": 15551, // Phantom
+    "37": 15552, // Plemumbra
     "38": 15560, // Worg Pup
     "39": 15561, // Warhound
-    "42": 15570, // Troll
+    "40": 15570, // Troll
+    "42": 15571, // Crusher
     "43": 15572, // Shaker
     "44": 15580, // Vaettir Drone
     "45": 15581, // Conjurer
     "46": 15582, // Necromancer
+    "47": 15590, // Brittle Skeleton
+    "48": 15591, // Skeleton
+    "49": 15592, // Raging Skeleton
+    "56": 15514, // Topo
     "57": 15584, // Kazad
     "58": 15544, // Tree'O'Doom?
     "59": 15610, // Vareth
