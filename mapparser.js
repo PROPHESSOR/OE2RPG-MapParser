@@ -488,7 +488,8 @@ class Parser {
             if (isDoubleHeight) {
                 ss += `\ttexturetop = "${getTexture(line.textureUpper)}";\n`;
             }
-            ss += `\ttexturebottom = "${getTexture(line.textureLower)}";\n`;
+            ss += `\ttexturebottom = "STEX721";\n`;
+            ss += `\toffsetx = 29;\n`;
             ss += `\tcomment = ${JSON.stringify(JSON.stringify(comment))};\n`;
             ss += "}\n\n";
 
@@ -505,7 +506,8 @@ class Parser {
             if (isDoubleHeight) {
                 ss += `\ttexturetop = "${getTexture(line.textureUpper)}";\n`;
             }
-            ss += `\ttexturebottom = "${getTexture(line.textureLower)}";\n`;
+            ss += `\ttexturebottom = "STEX721";\n`;
+            ss += `\toffsetx = 29;\n`;
             ss += `\tcomment = ${JSON.stringify(JSON.stringify(comment))};\n`;
             ss += "}\n\n";
 
