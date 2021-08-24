@@ -19,6 +19,12 @@ const Config = {
 };
 const mh = [];
 
+const GENERATE_LINES = true;
+const GENERATE_THINGS = true;
+const GENERATE_THINGS_FOR_KNOWN_DECALS = false;
+const GENERATE_DECALS = true;
+const GENERATE_DOORS = true;
+
 // Generate doors for lines with these lower texture ids
 const DOOR_IDS = [16, 18, 23, 27, 28];
 
@@ -137,9 +143,9 @@ class Parser {
             const thing = {
                 "x": file.readUInt8(),
                 "y": file.readUInt8(),
-                "c": file.readUInt8(),
+                "z": file.readUInt8(),
                 "id": file.readUInt8(),
-                "flags1": file.readUInt8(),
+                "flags": file.readUInt8(),
                 "flags2": file.readUInt16LE()
             };
 
@@ -180,11 +186,12 @@ class Parser {
 
             const decal = {
                 "id": thing.id,
+                z: thing.z || 0,
                 x0,
                 y0,
                 x1,
                 y1,
-                flags1: thing.flags1 || thing.flags || 0,
+                flags: thing.flags || 0,
                 flags2: thing.flags2 || 0
             };
 
@@ -241,9 +248,15 @@ class Parser {
 
         const getTexture = id => texmap[id] !== undefined ? `WALL${texmap[id]}` : `UID${id}`;
 
-
+        // Check is it more single or double-height sectors
+        // Used to offset decals (we don't have information about decal's sector height)
+        const doubleHeightStats = {
+            single: 0,
+            double: 0
+        }
 
         // lines
+        if (GENERATE_LINES)
         for (const line of lines) {
             if (DOOR_IDS.includes(line.textureLower)) continue;
             if (blacklist.includes(line.id)) continue;
@@ -253,6 +266,9 @@ class Parser {
 
             const isDoubleHeight = Boolean(line.flags & 0b10000000000000000);
             const isTopOnly = Boolean(line.flags & 0b101); // top only and not impassable
+
+            if (isDoubleHeight) doubleHeightStats.double++;
+            else doubleHeightStats.single++;
 
             const comment = {
                 id: line.id,
@@ -291,15 +307,18 @@ class Parser {
         }
 
         // things
+        if (GENERATE_THINGS)
         for (const thing of things) {
             // Skip if it is a decal
-            if (Object.keys(DECALS).includes(String(thing.id))) continue;
+            if (!GENERATE_THINGS_FOR_KNOWN_DECALS && Object.keys(DECALS).includes(String(thing.id)))
+                continue;
 
             if (thing.flags & 1) { // Will spawn
                 ss += "thing {\n";
                 ss += `\ttype = ${THINGS.mapspot};\n`;
                 ss += `\tx = ${thing.x * 8};\n`;
                 ss += `\ty = ${(256 - thing.y) * 8};\n`;
+                ss += `\tz = ${thing.z || 0};\n`;
                 ss += `\tid = ${(thing.x << 5) | thing.y};\n`;
                 ss += `\tcomment = "Will spawn ${thing.id}";\n`;
             } else if (THINGS[thing.id.toString()]) {
@@ -307,12 +326,14 @@ class Parser {
                 ss += `\ttype = ${THINGS[thing.id.toString()]};\n`;
                 ss += `\tx = ${thing.x * 8};\n`;
                 ss += `\ty = ${(256 - thing.y) * 8};\n`;
+                ss += `\tz = ${thing.z || 0};\n`;
             } else {
                 ss += "thing {\n";
                 ss += `\ttype = ${THINGS.notifier};\n`;
                 ss += `\tx = ${thing.x * 8};\n`;
                 ss += `\ty = ${(256 - thing.y) * 8};\n`;
-                ss += `\tcomment = "Unknown thing ${thing.id} ${(thing.flags1 || thing.flags || 0).toString(2)} ${(thing.flags2 || 0).toString(2)}";\n`;
+                ss += `\tz = ${thing.z || 0};\n`;
+                ss += `\tcomment = "Unknown thing ${thing.id} ${(thing.flags1 || thing.flags || 0).toString(2)} ${(thing.flags2 || 0).toString(2)} at ${thing.z || '?'}";\n`;
             }
 
             ss += "\tskill1 = true;\n";
@@ -336,6 +357,7 @@ class Parser {
         }
 
         // Generate decals
+        if (GENERATE_DECALS)
         for (const decal of decals) {
             // Doors will be generated later
             // if (DOOR_IDS.includes(decal.id)) continue;
@@ -343,19 +365,26 @@ class Parser {
             const v0 = findVertex(decal.x0, (2048 - decal.y0));
             const v1 = findVertex(decal.x1, (2048 - decal.y1));
 
+            const isDoubleHeight = doubleHeightStats.double > doubleHeightStats.single;
+
             ss += "sidedef {\n";
             ss += "\tsector = 0;\n";
             ss += `\ttexturemiddle = "${decal.texture}";\n`;
+            if (decal.z === 0 && isDoubleHeight)
+                ss += `\toffsety = -64;\n`;
             ss += "}\n\n";
 
             ss += "sidedef {\n";
             ss += "\tsector = 0;\n";
             ss += `\ttexturemiddle = "${decal.texture}";\n`;
+            if (decal.z === 0 && isDoubleHeight)
+                ss += `\toffsety = -64;\n`;
             ss += "}\n\n";
 
             ss += "linedef {\n";
             ss += `\tv1 = ${v0};\n`;
             ss += `\tv2 = ${v1};\n`;
+            ss += `\tcomment = ${JSON.stringify(JSON.stringify(decal))};\n`
             // ss += `\tcomment = ${JSON.stringify(JSON.stringify([decal.flags1.toString(2), decal.flags2.toString(2)]))};\n`
             ss += `\tsidefront = ${sideid++};\n`;
             ss += `\tsideback = ${sideid++};\n`;
@@ -367,12 +396,13 @@ class Parser {
 
 
         // Generate doors
+        if (GENERATE_DOORS)
         for (const line of lines) {
             if (!DOOR_IDS.includes(line.textureLower)) continue;
 
             const isDoubleHeight = Boolean(line.flags & 0b10000000000000000);
 
-            const sectorDoorBack = sectorid;
+            const doorSector = sectorid;
             ss += `sector { // ${sectorid++}\n`;
             ss += `\theightceiling = ${isDoubleHeight ? 128 : 64};\n`;
             ss += "\theightfloor = 64;\n";
@@ -410,7 +440,7 @@ class Parser {
 
             ss += `sidedef { // ${sideid}\n`;
             ss += `comment = "isDoor, isDoubleHeight ${isDoubleHeight}";\n`;
-            ss += `\tsector = ${sectorDoorBack};\n`;
+            ss += `\tsector = ${isDoubleHeight ? 1 : 0};\n`;
             if (isDoubleHeight) {
                 ss += `\ttexturetop = "${getTexture(line.textureUpper)}";\n`;
             }
@@ -431,7 +461,7 @@ class Parser {
 
             ss += `sidedef { // ${sideid}\n`;
             ss += `comment = "isDoor, isDoubleHeight ${isDoubleHeight}";\n`;
-            ss += `\tsector = ${sectorDoorBack};\n`;
+            ss += `\tsector = ${isDoubleHeight ? 1 : 0};\n`;
             if (isDoubleHeight) {
                 ss += `\ttexturetop = "${getTexture(line.textureUpper)}";\n`;
             }
@@ -454,7 +484,7 @@ class Parser {
 
             ss += `sidedef { // ${sideid}\n`;
             ss += `comment = "isDoor, isDoubleHeight ${isDoubleHeight}";\n`;
-            ss += `\tsector = ${sectorDoorBack};\n`;
+            ss += `\tsector = ${doorSector};\n`;
             if (isDoubleHeight) {
                 ss += `\ttexturetop = "${getTexture(line.textureUpper)}";\n`;
             }
@@ -471,7 +501,7 @@ class Parser {
 
             ss += `sidedef { // ${sideid}\n`;
             ss += `comment = "isDoor, isDoubleHeight ${isDoubleHeight}";\n`;
-            ss += `\tsector = ${sectorDoorBack};\n`;
+            ss += `\tsector = ${doorSector};\n`;
             if (isDoubleHeight) {
                 ss += `\ttexturetop = "${getTexture(line.textureUpper)}";\n`;
             }
@@ -574,9 +604,13 @@ class Parser {
 
         let vs = "";
         for (const vertex of vertices) {
+            // if (!(Number.isSafeInteger(vertex[0]) && Number.isSafeInteger(vertex[0]))) {
+            //     vs += "vertex {}\n\n";
+            //     continue;
+            // };
             vs += "vertex {\n";
-            vs += `\tx = ${vertex[0]};\n`;
-            vs += `\ty = ${vertex[1]};\n`;
+            vs += `\tx = ${vertex[0] || 0};\n`;
+            vs += `\ty = ${vertex[1] || 0};\n`;
             vs += "}\n\n";
         }
 
