@@ -157,32 +157,61 @@ class Parser {
 
     parseDecals(things) {
         const decals = [];
+
+        const overlapCheck = new Set();
+
         for (const thing of things) {
             if (!DECALS[thing.id.toString()]) continue;
 
             const isNotFence = (thing.flags & 2050) ? 0 : 1;
 
+            const overlapCode = `${thing.x}|${thing.y}`;
+
+            const isOverlaping = overlapCheck.has(overlapCode);
+
+            overlapCheck.add(overlapCode);
+
             let x0, y0, x1, y1;
-            if (thing.flags & 32) { // east
+            if (thing.flags & 32) { // east | (->)
                 x0 = (thing.x * 8 + isNotFence);
                 y0 = (thing.y * 8 + 30);
                 x1 = (thing.x * 8 + isNotFence);
                 y1 = (thing.y * 8 - 30);
-            } else if (thing.flags & 64) { // west
+
+                if (isOverlaping) {
+                    x0 -= 0.5;
+                    x1 -= 0.5;
+                }
+            } else if (thing.flags & 64) { // west | (<-)
                 x0 = (thing.x * 8 - isNotFence);
                 y0 = (thing.y * 8 - 30);
                 x1 = (thing.x * 8 - isNotFence);
                 y1 = (thing.y * 8 + 30);
-            } else if (thing.flags & 16) { // south
+
+                if (isOverlaping) {
+                    x0 += 0.5;
+                    x1 += 0.5;
+                }
+            } else if (thing.flags & 16) { // south - (^)
                 x0 = (thing.x * 8 - 30);
                 y0 = (thing.y * 8 + isNotFence);
                 x1 = (thing.x * 8 + 30);
                 y1 = (thing.y * 8 + isNotFence);
-            } else if (thing.flags & 8) { // north
+
+                if (isOverlaping) {
+                    y0 += 0.5;
+                    y1 += 0.5;
+                }
+            } else if (thing.flags & 8) { // north -
                 x0 = (thing.x * 8 + 30);
                 y0 = (thing.y * 8 - isNotFence);
                 x1 = (thing.x * 8 - 30);
                 y1 = (thing.y * 8 - isNotFence);
+
+                if (isOverlaping) {
+                    y0 -= 0.5;
+                    y1 -= 0.5;
+                }
             }
 
             const decal = {
@@ -329,6 +358,7 @@ class Parser {
                 ss += `\tx = ${thing.x * 8};\n`;
                 ss += `\ty = ${(256 - thing.y) * 8};\n`;
                 ss += `\theight = ${thing.z || 0};\n`;
+                ss += `\tcomment = "${thing.id}";\n`;
             } else {
                 ss += "thing {\n";
                 ss += `\ttype = ${THINGS.notifier};\n`;
