@@ -158,7 +158,7 @@ class Parser {
     parseDecals(things) {
         const decals = [];
 
-        const overlapCheck = new Set();
+        const overlapCheck = {};
 
         for (const thing of things) {
             if (!DECALS[thing.id.toString()]) continue;
@@ -167,9 +167,7 @@ class Parser {
 
             const overlapCode = `${thing.x}|${thing.y}`;
 
-            const isOverlaping = overlapCheck.has(overlapCode);
-
-            overlapCheck.add(overlapCode);
+            const overlap = overlapCheck[overlapCode];
 
             let x0, y0, x1, y1;
             if (thing.flags & 32) { // east | (->)
@@ -177,42 +175,43 @@ class Parser {
                 y0 = (thing.y * 8 + 30);
                 x1 = (thing.x * 8 + isNotFence);
                 y1 = (thing.y * 8 - 30);
-
-                if (isOverlaping) {
-                    x0 -= 0.5;
-                    x1 -= 0.5;
-                }
             } else if (thing.flags & 64) { // west | (<-)
                 x0 = (thing.x * 8 - isNotFence);
                 y0 = (thing.y * 8 - 30);
                 x1 = (thing.x * 8 - isNotFence);
                 y1 = (thing.y * 8 + 30);
-
-                if (isOverlaping) {
-                    x0 += 0.5;
-                    x1 += 0.5;
-                }
             } else if (thing.flags & 16) { // south - (^)
                 x0 = (thing.x * 8 - 30);
                 y0 = (thing.y * 8 + isNotFence);
                 x1 = (thing.x * 8 + 30);
                 y1 = (thing.y * 8 + isNotFence);
-
-                if (isOverlaping) {
-                    y0 += 0.5;
-                    y1 += 0.5;
-                }
             } else if (thing.flags & 8) { // north -
                 x0 = (thing.x * 8 + 30);
                 y0 = (thing.y * 8 - isNotFence);
                 x1 = (thing.x * 8 - 30);
                 y1 = (thing.y * 8 - isNotFence);
+            }
 
-                if (isOverlaping) {
-                    y0 -= 0.5;
-                    y1 -= 0.5;
+            if (overlap) {
+                if (overlap.flags & 32) { // | (->)
+                    x0 = overlap.x0 += 0.25;
+                    x1 = overlap.x1 += 0.25;
+                } else if (overlap.flags & 64) { // | (<-)
+                    x0 = overlap.x0 -= 0.25;
+                    x1 = overlap.x1 -= 0.25;
+                } else if (overlap.flags & 16) { // - (^)
+                    y0 = overlap.y0 += 0.25;
+                    y1 = overlap.y1 += 0.25;
+                } else if (overlap.flags & 8) { // -
+                    y0 = overlap.y0 -= 0.25;
+                    y1 = overlap.y1 -= 0.25;
                 }
             }
+
+            overlapCheck[overlapCode] = {
+                ...thing,
+                x0, y0, x1, y1
+            };
 
             const decal = {
                 "id": thing.id,
