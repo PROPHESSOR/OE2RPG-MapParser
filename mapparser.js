@@ -21,7 +21,7 @@ const mh = [];
 
 const GENERATE_LINES = true;
 const GENERATE_THINGS = true;
-const GENERATE_THINGS_FOR_KNOWN_DECALS = false;
+const GENERATE_THINGS_FOR_KNOWN_DECALS = true;
 const GENERATE_DECALS = true;
 const GENERATE_DOORS = true;
 
@@ -145,8 +145,8 @@ class Parser {
                 "y": file.readUInt8(),
                 "z": file.readUInt8(),
                 "id": file.readUInt8(),
-                "flags": file.readUInt8(),
-                "flags2": file.readUInt16LE()
+                "flags2": file.readUInt8(),
+                "flags": file.readUInt16LE()
             };
 
             things.push(thing);
@@ -161,6 +161,7 @@ class Parser {
             if (!DECALS[thing.id.toString()]) continue;
 
             const isNotFence = (thing.flags & 2050) ? 0 : 1;
+
             let x0, y0, x1, y1;
             if (thing.flags & 32) { // east
                 x0 = (thing.x * 8 + isNotFence);
@@ -199,6 +200,7 @@ class Parser {
 
             decals.push(decal);
         }
+
         return decals;
     }
 
@@ -312,13 +314,13 @@ class Parser {
             // Skip if it is a decal
             if (!GENERATE_THINGS_FOR_KNOWN_DECALS && Object.keys(DECALS).includes(String(thing.id)))
                 continue;
-
+            
             if (thing.flags & 1) { // Will spawn
                 ss += "thing {\n";
                 ss += `\ttype = ${THINGS.mapspot};\n`;
                 ss += `\tx = ${thing.x * 8};\n`;
                 ss += `\ty = ${(256 - thing.y) * 8};\n`;
-                ss += `\tz = ${thing.z || 0};\n`;
+                ss += `\theight = ${thing.z || 0};\n`;
                 ss += `\tid = ${(thing.x << 5) | thing.y};\n`;
                 ss += `\tcomment = "Will spawn ${thing.id}";\n`;
             } else if (THINGS[thing.id.toString()]) {
@@ -326,13 +328,13 @@ class Parser {
                 ss += `\ttype = ${THINGS[thing.id.toString()]};\n`;
                 ss += `\tx = ${thing.x * 8};\n`;
                 ss += `\ty = ${(256 - thing.y) * 8};\n`;
-                ss += `\tz = ${thing.z || 0};\n`;
+                ss += `\theight = ${thing.z || 0};\n`;
             } else {
                 ss += "thing {\n";
                 ss += `\ttype = ${THINGS.notifier};\n`;
                 ss += `\tx = ${thing.x * 8};\n`;
                 ss += `\ty = ${(256 - thing.y) * 8};\n`;
-                ss += `\tz = ${thing.z || 0};\n`;
+                ss += `\theight = ${thing.z || 0};\n`;
                 ss += `\tcomment = "Unknown thing ${thing.id} ${(thing.flags1 || thing.flags || 0).toString(2)} ${(thing.flags2 || 0).toString(2)} at ${thing.z || '?'}";\n`;
             }
 
