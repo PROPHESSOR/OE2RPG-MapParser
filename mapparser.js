@@ -21,12 +21,31 @@ const mh = [];
 
 const GENERATE_LINES = true;
 const GENERATE_THINGS = true;
-const GENERATE_THINGS_FOR_KNOWN_DECALS = true;
+const GENERATE_THINGS_FOR_KNOWN_DECALS = false;
 const GENERATE_DECALS = true;
 const GENERATE_DOORS = true;
 
 // Generate doors for lines with these lower texture ids
 const DOOR_IDS = [16, 18, 23, 27, 28];
+
+const THINGS_PROPS = {
+    spawnLater: 1 << 0,
+    turnSouth: 1 << 3,
+    turnNorth: 1 << 4, // ^
+    turnEast: 1 << 5, // >
+    turnWest: 1 << 6, // <
+    isUpper: 1 << 7, // ?
+    unknown8: 1 << 8,
+    unknown9: 1 << 9,
+    unknown10: 1 << 10,
+    unknown11: 1 << 11, // not blocking?
+    unknown12: 1 << 12,
+    unknown13: 1 << 13,
+    unknown14: 1 << 14,
+    unknown15: 1 << 15,
+    upperOnly: 1 << 10,
+    isNotFence: (1 << 1) | (1 << 11),
+}
 
 class Parser {
     constructor(from, to) {
@@ -130,6 +149,7 @@ class Parser {
         const things = [];
         for (let i = 0; i < thingsCount; i++) {
             const thing = {
+                "floating": false,
                 "x": file.readUInt8(),
                 "y": file.readUInt8(),
                 "id": file.readUInt8(),
@@ -141,6 +161,7 @@ class Parser {
 
         for (let i = 0; i < extraCount; i++) {
             const thing = {
+                "floating": true,
                 "x": file.readUInt8(),
                 "y": file.readUInt8(),
                 "z": file.readUInt8(),
@@ -221,7 +242,9 @@ class Parser {
                 x1,
                 y1,
                 flags: thing.flags || 0,
-                flags2: thing.flags2 || 0
+                flags2: thing.flags2 || 0,
+                isUpper: Boolean(thing.flags && (1 << 7)),
+                isDoor: Boolean(thing.flags & THINGS_PROPS.unknown14)
             };
 
             decal.texture = typeof DECALS[thing.id] === 'function' ? DECALS[thing.id](decal) : DECALS[thing.id],
@@ -401,15 +424,15 @@ class Parser {
             ss += "sidedef {\n";
             ss += "\tsector = 0;\n";
             ss += `\ttexturemiddle = "${decal.texture}";\n`;
-            if (decal.z === 0 && isDoubleHeight)
-                ss += `\toffsety = -64;\n`;
+            if (!decal.isDoor && (decal.z === 0 && isDoubleHeight) || (decal.z === 64 && isDoubleHeight))
+                ss += `\toffsety = -${decal.texture[0] === 'W' ? 117 : 64};\n`;
             ss += "}\n\n";
 
             ss += "sidedef {\n";
             ss += "\tsector = 0;\n";
             ss += `\ttexturemiddle = "${decal.texture}";\n`;
-            if (decal.z === 0 && isDoubleHeight)
-                ss += `\toffsety = -64;\n`;
+            if (!decal.isDoor && (decal.z === 0 && isDoubleHeight) || (decal.z === 64 && isDoubleHeight))
+                ss += `\toffsety = -${decal.texture[0] === 'W' ? 117 : 64};\n`;
             ss += "}\n\n";
 
             ss += "linedef {\n";
