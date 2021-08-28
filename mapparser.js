@@ -431,6 +431,7 @@ class Parser {
             ss += "sidedef {\n";
             ss += "\tsector = 0;\n";
             ss += `\ttexturemiddle = "${decal.texture}";\n`;
+            // TODO: Scale x -1
             if (!decal.isDoor && (decal.z === 0 && isDoubleHeight) || (decal.z === 64 && isDoubleHeight))
                 ss += `\toffsety = -${decal.texture[0] === 'W' ? 117 : 64};\n`;
             ss += "}\n\n";
