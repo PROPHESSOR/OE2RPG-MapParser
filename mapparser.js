@@ -220,6 +220,7 @@ class Parser {
                     if (y0 < y1) {
                         x0 -= 0.5;
                         x1 -= 0.5;
+                        [y0, y1] = [y1, y0];
                     }
                 } else if (overlap.flags & 64) { // | (<-)
                     x0 = overlap.x0 - 0.25;
@@ -227,6 +228,7 @@ class Parser {
                     if (y0 > y1) {
                         x0 += 0.5;
                         x1 += 0.5;
+                        [y0, y1] = [y1, y0];
                     }
                 } else if (overlap.flags & 16) { // - (^)
                     y0 = overlap.y0 + 0.25;
@@ -234,6 +236,7 @@ class Parser {
                     if (x0 > x1) {
                         y0 -= 0.5;
                         y1 -= 0.5;
+                        [x0, x1] = [x1, x0];
                     }
                 } else if (overlap.flags & 8) { // -
                     y0 = overlap.y0 - 0.25;
@@ -241,6 +244,7 @@ class Parser {
                     if (x0 < x1) {
                         y0 += 0.5;
                         y1 += 0.5;
+                        [x0, x1] = [x1, x0];
                     }
                 }
             }
@@ -260,7 +264,7 @@ class Parser {
                 flags: thing.flags || 0,
                 flags2: thing.flags2 || 0,
                 isUpper: Boolean(thing.flags && (1 << 7)),
-                isDoor: Boolean(thing.flags & THINGS_PROPS.unknown14),
+                isDoor: thing.flags & THINGS_PROPS.unknown14 && thing.flags & THINGS_PROPS.unknown11,
                 isNotFence: Boolean(thing.flags & THINGS_PROPS.isNotFence)
             };
 
@@ -455,7 +459,7 @@ class Parser {
             ss += "sidedef {\n";
             ss += "\tsector = 0;\n";
             ss += `\ttexturemiddle = "${decal.texture}";\n`;
-            ss += `\tscalex_mid = -1.0;\n`;
+            // ss += `\tscalex_mid = -1.0;\n`; // Have some bugs with pre-scaled decals
             if (needsOffset)
                 ss += `\toffsety = -${decal.texture[0] === 'W' ? 117 : 64};\n`;
             ss += "}\n\n";
@@ -597,91 +601,6 @@ class Parser {
             ss += `\tcomment = ${JSON.stringify(JSON.stringify(comment))};\n`;
             ss += "}\n\n";
         }
-        // for (const decal of decals) {
-        //     if (!DOOR_IDS.includes(decal.id)) continue;
-
-        //     const v00 = findVertex(decal.x0, (2048 - decal.y0));
-        //     const v01 = findVertex(decal.x1, (2048 - decal.y1));
-
-        //     let v0, v1, v2, v3;
-
-        //     if (isVertical(v00.x, v01.x)) {
-        //         v0 = findVertex((v01.x * 8) - 8, (256 - v01.y) * 8);
-        //         v1 = findVertex((v00.x * 8) - 8, (256 - v00.y) * 8);
-        //         v2 = findVertex((v00.x * 8) + 8, (256 - v00.y) * 8);
-        //         v3 = findVertex((v01.x * 8) + 8, (256 - v01.y) * 8);
-        //     } else {
-        //         v0 = findVertex(v01.x * 8, ((256 - v01.y) * 8) - 8);
-        //         v1 = findVertex(v00.x * 8, ((256 - v00.y) * 8) - 8);
-        //         v2 = findVertex(v00.x * 8, ((256 - v00.y) * 8) + 8);
-        //         v3 = findVertex(v01.x * 8, ((256 - v01.y) * 8) + 8);
-        //     }
-
-        //     // Front side
-        //     ss += `sidedef { // ${sideid}\n`;
-        //     ss += `\ttexturebottom = "${decal.texture}";\n`;
-        //     ss += `\tsector = ${sectorid};\n`;
-        //     ss += "}\n\n";
-
-        //     ss += "linedef {\n";
-        //     ss += `\tv2 = ${v0};\n`;
-        //     ss += `\tv1 = ${v1};\n`;
-        //     ss += `\tsidefront = ${sideid++};\n`;
-        //     ss += "\tplayeruse = true;\n";
-        //     ss += "\trepeatspecial = true;\n";
-        //     ss += "\tspecial = 80;\n";
-        //     ss += "\targ0 = 3002;\n";
-        //     ss += "\tcomment = \"door\";\n";
-        //     ss += "\tdoublesided = true;\n";
-        //     ss += "}\n\n";
-
-        //     // Back side
-        //     ss += `sidedef { // ${sideid}\n`;
-        //     ss += `\ttexturebottom = "${decal.texture}";\n`;
-        //     ss += `\tsector = ${sectorid};\n`;
-        //     ss += "\tscalex_mid = -1;\n";
-        //     ss += "\tscalex_top = -1;\n";
-        //     ss += "}\n\n";
-
-        //     ss += "linedef {\n";
-        //     ss += `\tv2 = ${v2};\n`;
-        //     ss += `\tv1 = ${v3};\n`;
-        //     ss += `\tsidefront = ${sideid++};\n`;
-        //     ss += "\tplayeruse = true;\n";
-        //     ss += "\trepeatspecial = true;\n";
-        //     ss += "\tspecial = 80;\n";
-        //     ss += "\targ0 = 3002;\n";
-        //     ss += "\tcomment = \"door\";\n";
-        //     ss += "\tdoublesided = true;\n";
-        //     ss += "}\n\n";
-
-        //     // Side 1
-        //     // ss += `sidedef { // ${sideid}\n`;
-        //     // ss += `\ttexturemiddle = "WALL0";\n`;
-        //     // ss += `\tsector = ${sectorid};\n`;
-        //     // ss += "}\n\n";
-
-        //     // ss += "linedef {\n";
-        //     // ss += `\tv2 = ${v0};\n`;
-        //     // ss += `\tv1 = ${v3};\n`;
-        //     // ss += `\tsidefront = ${sideid};\n`;
-        //     // ss += "}\n\n";
-
-        //     // // Side 2
-        //     // ss += "linedef {\n";
-        //     // ss += `\tv2 = ${v2};\n`;
-        //     // ss += `\tv1 = ${v1};\n`;
-        //     // ss += `\tsidefront = ${sideid++};\n`;
-        //     // ss += "\tcomment = \"door side\";\n";
-        //     // ss += "}\n\n";
-
-        //     ss += `sector { // ${sectorid++}\n`;
-        //     ss += "\theightceiling = 64;\n";
-        //     ss += "\theightfloor = 64;\n";
-        //     ss += "\ttexturefloor = \"WALL0\";\n";
-        //     ss += "\ttextureceiling = \"WALL0\";\n";
-        //     ss += "}\n\n";
-        // }
 
         let vs = "";
         for (const vertex of vertices) {
