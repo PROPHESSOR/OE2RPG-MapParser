@@ -23,6 +23,7 @@ const GENERATE_LINES = true;
 const GENERATE_THINGS = true;
 const GENERATE_THINGS_FOR_KNOWN_DECALS = false;
 const GENERATE_DECALS = true;
+const GENERATE_SAFE_DECALS = true;
 const GENERATE_DOORS = true;
 
 // Generate doors for lines with these lower texture ids
@@ -190,26 +191,28 @@ class Parser {
 
             const overlap = overlapCheck[overlapCode];
 
+            const decalRadius = GENERATE_SAFE_DECALS ? 30 : 32;
+
             let x0, y0, x1, y1;
             if (thing.flags & 32) { // east | (->)
                 x0 = (thing.x * 8 + isNotFence);
-                y0 = (thing.y * 8 + 30);
+                y0 = (thing.y * 8 + decalRadius);
                 x1 = (thing.x * 8 + isNotFence);
-                y1 = (thing.y * 8 - 30);
+                y1 = (thing.y * 8 - decalRadius);
             } else if (thing.flags & 64) { // west | (<-)
                 x0 = (thing.x * 8 - isNotFence);
-                y0 = (thing.y * 8 - 30);
+                y0 = (thing.y * 8 - decalRadius);
                 x1 = (thing.x * 8 - isNotFence);
-                y1 = (thing.y * 8 + 30);
+                y1 = (thing.y * 8 + decalRadius);
             } else if (thing.flags & 16) { // south - (^)
-                x0 = (thing.x * 8 - 30);
+                x0 = (thing.x * 8 - decalRadius);
                 y0 = (thing.y * 8 + isNotFence);
-                x1 = (thing.x * 8 + 30);
+                x1 = (thing.x * 8 + decalRadius);
                 y1 = (thing.y * 8 + isNotFence);
             } else if (thing.flags & 8) { // north -
-                x0 = (thing.x * 8 + 30);
+                x0 = (thing.x * 8 + decalRadius);
                 y0 = (thing.y * 8 - isNotFence);
-                x1 = (thing.x * 8 - 30);
+                x1 = (thing.x * 8 - decalRadius);
                 y1 = (thing.y * 8 - isNotFence);
             }
 
