@@ -215,17 +215,33 @@ class Parser {
 
             if (overlap) {
                 if (overlap.flags & 32) { // | (->)
-                    x0 = overlap.x0 += 0.25;
-                    x1 = overlap.x1 += 0.25;
+                    x0 = overlap.x0 + 0.25;
+                    x1 = overlap.x1 + 0.25;
+                    if (y0 < y1) {
+                        x0 -= 0.5;
+                        x1 -= 0.5;
+                    }
                 } else if (overlap.flags & 64) { // | (<-)
-                    x0 = overlap.x0 -= 0.25;
-                    x1 = overlap.x1 -= 0.25;
+                    x0 = overlap.x0 - 0.25;
+                    x1 = overlap.x1 - 0.25;
+                    if (y0 > y1) {
+                        x0 += 0.5;
+                        x1 += 0.5;
+                    }
                 } else if (overlap.flags & 16) { // - (^)
-                    y0 = overlap.y0 += 0.25;
-                    y1 = overlap.y1 += 0.25;
+                    y0 = overlap.y0 + 0.25;
+                    y1 = overlap.y1 + 0.25;
+                    if (x0 > x1) {
+                        y0 -= 0.5;
+                        y1 -= 0.5;
+                    }
                 } else if (overlap.flags & 8) { // -
-                    y0 = overlap.y0 -= 0.25;
-                    y1 = overlap.y1 -= 0.25;
+                    y0 = overlap.y0 - 0.25;
+                    y1 = overlap.y1 - 0.25;
+                    if (x0 < x1) {
+                        y0 += 0.5;
+                        y1 += 0.5;
+                    }
                 }
             }
 
@@ -244,7 +260,8 @@ class Parser {
                 flags: thing.flags || 0,
                 flags2: thing.flags2 || 0,
                 isUpper: Boolean(thing.flags && (1 << 7)),
-                isDoor: Boolean(thing.flags & THINGS_PROPS.unknown14)
+                isDoor: Boolean(thing.flags & THINGS_PROPS.unknown14),
+                isNotFence: Boolean(thing.flags & THINGS_PROPS.isNotFence)
             };
 
             decal.texture = typeof DECALS[thing.id] === 'function' ? DECALS[thing.id](decal) : DECALS[thing.id],
@@ -421,18 +438,25 @@ class Parser {
 
             const isDoubleHeight = doubleHeightStats.double > doubleHeightStats.single;
 
+            const needsOffset = !decal.isDoor
+                && isDoubleHeight
+                && (decal.z === 0
+                    || decal.z === 64
+                    || !decal.isNotFence
+                );
+
             ss += "sidedef {\n";
             ss += "\tsector = 0;\n";
             ss += `\ttexturemiddle = "${decal.texture}";\n`;
-            if (!decal.isDoor && (decal.z === 0 && isDoubleHeight) || (decal.z === 64 && isDoubleHeight))
+            if (needsOffset)
                 ss += `\toffsety = -${decal.texture[0] === 'W' ? 117 : 64};\n`;
             ss += "}\n\n";
 
             ss += "sidedef {\n";
             ss += "\tsector = 0;\n";
             ss += `\ttexturemiddle = "${decal.texture}";\n`;
-            // TODO: Scale x -1
-            if (!decal.isDoor && (decal.z === 0 && isDoubleHeight) || (decal.z === 64 && isDoubleHeight))
+            ss += `\tscalex_mid = -1.0;\n`;
+            if (needsOffset)
                 ss += `\toffsety = -${decal.texture[0] === 'W' ? 117 : 64};\n`;
             ss += "}\n\n";
 
