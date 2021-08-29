@@ -73,7 +73,7 @@ class Parser {
     }
 
     getMappings() {
-        return require('./mappings.json.js');
+        return require('./mappings.js');
     }
 
     parseMap(from) {
