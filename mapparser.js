@@ -27,7 +27,7 @@ const GENERATE_SAFE_DECALS = true;
 const GENERATE_DOORS = true;
 
 // Generate doors for lines with these lower texture ids
-const DOOR_IDS = [16, 18, 23, 27, 28];
+const DOOR_IDS = [16, 18, 23, 25, 27, 28];
 
 const THINGS_PROPS = {
     spawnLater: 1 << 0,
