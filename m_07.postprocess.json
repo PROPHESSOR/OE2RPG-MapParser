@@ -1,0 +1,9 @@
+{
+    "deleteLines": [216, 150, 353, 347, 247, 248],
+    "deleteDecals": [340, 341, 342, 343],
+    "defaultTextures": {
+        "floor": "FLAT017",
+        "ceilLow": "FLAT016",
+        "ceilHigh": "F_SKY1"
+    }
+}

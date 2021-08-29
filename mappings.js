@@ -11,6 +11,7 @@ module.exports = {
     9: 9,
     16: 11, // Open door
     18: 10, // Closed door
+    19: 11, // Closed door
     23: 12, // Guard door
     25: 14, // Elevator up
     27: 16, // Blue exit door
