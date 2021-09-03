@@ -420,6 +420,9 @@ class Parser {
                 const isHorizontal = y0 === y1;
                 const isConflicted = Boolean(pp && pp.conflictedUpperTextures && pp.conflictedUpperTextures.includes(line.id));
 
+                if (Boolean(pp && pp.deleteUpperTextures && pp.deleteUpperTextures.includes(line.id)))
+                    continue;
+
                 const vertexComment = isConflicted
                     ? `Conflicted upper texture "${getTexture(line.textureUpper)}" for line ${line.id}`
                     : null;
