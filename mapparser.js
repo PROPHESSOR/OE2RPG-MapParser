@@ -31,6 +31,8 @@ const GENERATE_SAFE_UPPER_WALLS = true;
 const OFFSET_DECAL = 0.25; // Distance between decals
 const OFFSET_UPPER = 0.2; // Distance between wall and upper texture decal
 
+const SHRINK_UPPER_WALL = 0.3; // for GENERATE_SAFE_UPPER_WALLS
+
 // Generate doors for lines with these lower texture ids
 const DOOR_IDS = [16, 18, 19, 23, 25, 27, 28, 29];
 
@@ -432,11 +434,11 @@ class Parser {
                     const direction = y0 < y1 ? 1 : -1;
                     if (GENERATE_SAFE_UPPER_WALLS) {
                         if (direction === -1) {
-                            y0 -= 1;
-                            y1 += 1;
+                            y0 -= SHRINK_UPPER_WALL;
+                            y1 += SHRINK_UPPER_WALL;
                         } else {
-                            y0 += 1;
-                            y1 -= 1;
+                            y0 += SHRINK_UPPER_WALL;
+                            y1 -= SHRINK_UPPER_WALL;
                         }
                     }
                     v0 = findVertex(x1 + (OFFSET_UPPER * direction), y1, vertexComment);
@@ -445,11 +447,11 @@ class Parser {
                     const direction = x0 > x1 ? 1 : -1;
                     if (GENERATE_SAFE_UPPER_WALLS) {
                         if (direction === -1) {
-                            x0 += 1;
-                            x1 -= 1;
+                            x0 += SHRINK_UPPER_WALL;
+                            x1 -= SHRINK_UPPER_WALL;
                         } else {
-                            x0 -= 1;
-                            x1 += 1;
+                            x0 -= SHRINK_UPPER_WALL;
+                            x1 += SHRINK_UPPER_WALL;
                         }
                     }
                     v0 = findVertex(x1, y1 + (OFFSET_UPPER * direction), vertexComment);
@@ -457,37 +459,37 @@ class Parser {
                 } else if (isDiagonal) {
                     if (x0 > x1 && y0 > y1) { // -/ 0/1
                         // Shrink
-                        x0 -= 1;
-                        y0 -= 1;
-                        x1 += 1;
-                        y1 += 1;
+                        x0 -= SHRINK_UPPER_WALL;
+                        y0 -= SHRINK_UPPER_WALL;
+                        x1 += SHRINK_UPPER_WALL;
+                        y1 += SHRINK_UPPER_WALL;
                         // Offset
                         x0 -= OFFSET_UPPER;
                         x1 -= OFFSET_UPPER;
                     } else if (x0 > x1 && y0 < y1) { // \- 0\1
                         // Shrink
-                        x0 -= 1;
-                        y0 += 1;
-                        x1 += 1;
-                        y1 -= 1;
+                        x0 -= SHRINK_UPPER_WALL;
+                        y0 += SHRINK_UPPER_WALL;
+                        x1 += SHRINK_UPPER_WALL;
+                        y1 -= SHRINK_UPPER_WALL;
                         // Offset
                         x0 += OFFSET_UPPER;
                         x1 += OFFSET_UPPER;
                     } else if (x0 < x1 && y0 > y1) { // -\ 1\0
                         // Shrink
-                        x0 += 1;
-                        y0 -= 1;
-                        x1 -= 1;
-                        y1 += 1;
+                        x0 += SHRINK_UPPER_WALL;
+                        y0 -= SHRINK_UPPER_WALL;
+                        x1 -= SHRINK_UPPER_WALL;
+                        y1 += SHRINK_UPPER_WALL;
                         // Offset
                         x0 -= OFFSET_UPPER;
                         x1 -= OFFSET_UPPER;
                     } else if (x0 < x1 && y0 < y1) { // /- 1/0
                         // Shrink
-                        x0 += 1;
-                        y0 += 1;
-                        x1 -= 1;
-                        y1 -= 1;
+                        x0 += SHRINK_UPPER_WALL;
+                        y0 += SHRINK_UPPER_WALL;
+                        x1 -= SHRINK_UPPER_WALL;
+                        y1 -= SHRINK_UPPER_WALL;
                         // Offset
                         x0 += OFFSET_UPPER;
                         x1 += OFFSET_UPPER;
