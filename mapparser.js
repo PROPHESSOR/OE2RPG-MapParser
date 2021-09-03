@@ -459,7 +459,14 @@ class Parser {
 
                 if (isConflicted) continue; // Generate vertices only
 
-                ss += `sidedef { // ${sideid}\n`;
+                ss += `sidedef {\n`;
+                ss += `comment = "doubleHeight decal for line ${line.id}";\n`;
+                ss += `\tsector = 1;\n`;
+                ss += `\ttexturemiddle = "${getTexture(line.textureUpper)}";\n`;
+                ss += `\tcomment = ${JSON.stringify(JSON.stringify(comment))};\n`;
+                ss += "}\n\n";
+
+                ss += `sidedef {\n`;
                 ss += `comment = "doubleHeight decal for line ${line.id}";\n`;
                 ss += `\tsector = 1;\n`;
                 ss += `\ttexturemiddle = "${getTexture(line.textureUpper)}";\n`;
@@ -469,7 +476,9 @@ class Parser {
                 ss += "linedef {\n";
                 ss += `\tv2 = ${v0};\n`;
                 ss += `\tv1 = ${v1};\n`;
+                ss += "\ttwosided = true;\n";
                 ss += `\tsidefront = ${sideid++};\n`;
+                ss += `\tsideback = ${sideid++};\n`;
                 ss += `\tcomment = ${JSON.stringify(JSON.stringify(comment))};\n`;
                 ss += "}\n\n";
             }
