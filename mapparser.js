@@ -418,6 +418,7 @@ class Parser {
                 // Vertical/Horizontal/Diagonal
                 const isVertical = x0 === x1;
                 const isHorizontal = y0 === y1;
+                const isDiagonal = Math.max(x0, x1) - Math.min(x0, x1) === Math.max(y0, y1) - Math.min(y0, y1);
                 const isConflicted = Boolean(pp && pp.conflictedUpperTextures && pp.conflictedUpperTextures.includes(line.id));
 
                 if (Boolean(pp && pp.deleteUpperTextures && pp.deleteUpperTextures.includes(line.id)))
@@ -453,6 +454,46 @@ class Parser {
                     }
                     v0 = findVertex(x1, y1 + (OFFSET_UPPER * direction), vertexComment);
                     v1 = findVertex(x0, y0 + (OFFSET_UPPER * direction), vertexComment);
+                } else if (isDiagonal) {
+                    if (x0 > x1 && y0 > y1) { // -/ 0/1
+                        // Shrink
+                        x0 -= 1;
+                        y0 -= 1;
+                        x1 += 1;
+                        y1 += 1;
+                        // Offset
+                        x0 -= OFFSET_UPPER;
+                        x1 -= OFFSET_UPPER;
+                    } else if (x0 > x1 && y0 < y1) { // \- 0\1
+                        // Shrink
+                        x0 -= 1;
+                        y0 += 1;
+                        x1 += 1;
+                        y1 -= 1;
+                        // Offset
+                        x0 += OFFSET_UPPER;
+                        x1 += OFFSET_UPPER;
+                    } else if (x0 < x1 && y0 > y1) { // -\ 1\0
+                        // Shrink
+                        x0 += 1;
+                        y0 -= 1;
+                        x1 -= 1;
+                        y1 += 1;
+                        // Offset
+                        x0 -= OFFSET_UPPER;
+                        x1 -= OFFSET_UPPER;
+                    } else if (x0 < x1 && y0 < y1) { // /- 1/0
+                        // Shrink
+                        x0 += 1;
+                        y0 += 1;
+                        x1 -= 1;
+                        y1 -= 1;
+                        // Offset
+                        x0 += OFFSET_UPPER;
+                        x1 += OFFSET_UPPER;
+                    }
+                    v0 = findVertex(x1, y1, vertexComment);
+                    v1 = findVertex(x0, y0, vertexComment);
                 } else {
                     continue;
                 }
