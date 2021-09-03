@@ -1,5 +1,10 @@
 {
     "deleteLines": [443, 191, 155, 226, 207, 36, 394, 184, 185, 158, 160, 222, 221, 198, 200, 15, 19, 284, 488, 495, 475, 505],
     "conflictedUpperTextures": [274, 273, 356, 357],
-    "deleteUpperTextures": [8, 12, 489, 496, 476, 507]
+    "deleteUpperTextures": [8, 12, 489, 496, 476, 507],
+    "defaultTextures": {
+        "floor": "FLAT018",
+        "ceilLow": "FLAT022",
+        "ceilHigh": "F_SKY1"
+    }
 }
