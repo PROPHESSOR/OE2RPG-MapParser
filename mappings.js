@@ -16,6 +16,7 @@ module.exports = {
     25: 14, // Elevator up
     27: 16, // Blue exit door
     28: 17, // Yellow exit door
+    29: 18, // Green exit door
     43: 19,
     44: 20,
     45: 21, // Interpolation

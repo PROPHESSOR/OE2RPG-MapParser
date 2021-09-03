@@ -25,9 +25,14 @@ const GENERATE_THINGS_FOR_KNOWN_DECALS = false;
 const GENERATE_DECALS = true;
 const GENERATE_SAFE_DECALS = true;
 const GENERATE_DOORS = true;
+const GENERATE_UPPER_WALLS = true;
+const GENERATE_SAFE_UPPER_WALLS = true;
+
+const OFFSET_DECAL = 0.25; // Distance between decals
+const OFFSET_UPPER = 0.2; // Distance between wall and upper texture decal
 
 // Generate doors for lines with these lower texture ids
-const DOOR_IDS = [16, 18, 19, 23, 25, 27, 28];
+const DOOR_IDS = [16, 18, 19, 23, 25, 27, 28, 29];
 
 const THINGS_PROPS = {
     spawnLater: 1 << 0,
@@ -222,32 +227,32 @@ class Parser {
 
             if (overlap) {
                 if (overlap.flags & 32) { // | (->)
-                    x0 = overlap.x0 + 0.25;
-                    x1 = overlap.x1 + 0.25;
+                    x0 = overlap.x0 + OFFSET_DECAL;
+                    x1 = overlap.x1 + OFFSET_DECAL;
                     if (y0 < y1) {
                         x0 -= 0.5;
                         x1 -= 0.5;
                         [y0, y1] = [y1, y0];
                     }
                 } else if (overlap.flags & 64) { // | (<-)
-                    x0 = overlap.x0 - 0.25;
-                    x1 = overlap.x1 - 0.25;
+                    x0 = overlap.x0 - OFFSET_DECAL;
+                    x1 = overlap.x1 - OFFSET_DECAL;
                     if (y0 > y1) {
                         x0 += 0.5;
                         x1 += 0.5;
                         [y0, y1] = [y1, y0];
                     }
                 } else if (overlap.flags & 16) { // - (^)
-                    y0 = overlap.y0 + 0.25;
-                    y1 = overlap.y1 + 0.25;
+                    y0 = overlap.y0 + OFFSET_DECAL;
+                    y1 = overlap.y1 + OFFSET_DECAL;
                     if (x0 > x1) {
                         y0 -= 0.5;
                         y1 -= 0.5;
                         [x0, x1] = [x1, x0];
                     }
                 } else if (overlap.flags & 8) { // -
-                    y0 = overlap.y0 - 0.25;
-                    y1 = overlap.y1 - 0.25;
+                    y0 = overlap.y0 - OFFSET_DECAL;
+                    y1 = overlap.y1 - OFFSET_DECAL;
                     if (x0 < x1) {
                         y0 += 0.5;
                         y1 += 0.5;
@@ -322,11 +327,11 @@ class Parser {
         let sectorid = 1;
         const vertices = [];
 
-        function findVertex(x, y) {
+        function findVertex(x, y, comment=null) {
             for (let i = 0; i < vertices.length; i++) {
                 if (vertices[i][0] === x && vertices[i][1] === y) return i;
             }
-            vertices.push([x, y]);
+            vertices.push([x, y, comment]);
             return vertices.length - 1;
         }
 
@@ -363,8 +368,9 @@ class Parser {
                 y1 = change.y0 || y1;
             }
 
-            const v0 = findVertex(x1, y1);
-            const v1 = findVertex(x0, y0);
+            // Will be overriden later
+            let v0 = findVertex(x1, y1);
+            let v1 = findVertex(x0, y0);
 
             const isDoubleHeight = Boolean(line.flags & 0b10000000000000000);
             const isTopOnly = Boolean(line.flags & 0b101); // top only and not impassable
@@ -392,7 +398,7 @@ class Parser {
             if (isDoubleHeight && !isTopOnly) {
                 ss += `\ttexturetop = "${getTexture(line.textureUpper)}";\n`;
             }
-            if (!isTopOnly) {
+            if (!isTopOnly) { // ??? Is it a decal?
                 ss += `\ttexturemiddle = "${getTexture(line.textureLower)}";\n`;
             } else {
                 ss += `\ttexturemiddle = "${getTexture(line.textureUpper)}";\n`;
@@ -406,6 +412,64 @@ class Parser {
             ss += `\tsidefront = ${sideid++};\n`;
             ss += `\tcomment = ${JSON.stringify(JSON.stringify(comment))};\n`;
             ss += "}\n\n";
+
+            // Generate decals for upper wall texture
+            if (GENERATE_UPPER_WALLS && isDoubleHeight) {
+                // Vertical/Horizontal/Diagonal
+                const isVertical = x0 === x1;
+                const isHorizontal = y0 === y1;
+                const isConflicted = Boolean(pp && pp.conflictedUpperTextures && pp.conflictedUpperTextures.includes(line.id));
+
+                const vertexComment = isConflicted
+                    ? `Conflicted upper texture "${getTexture(line.textureUpper)}" for line ${line.id}`
+                    : null;
+
+                if (isVertical) {
+                    const direction = y0 < y1 ? 1 : -1;
+                    if (GENERATE_SAFE_UPPER_WALLS) {
+                        if (direction === -1) {
+                            y0 -= 1;
+                            y1 += 1;
+                        } else {
+                            y0 += 1;
+                            y1 -= 1;
+                        }
+                    }
+                    v0 = findVertex(x1 + (OFFSET_UPPER * direction), y1, vertexComment);
+                    v1 = findVertex(x0 + (OFFSET_UPPER * direction), y0, vertexComment);
+                } else if (isHorizontal) {
+                    const direction = x0 > x1 ? 1 : -1;
+                    if (GENERATE_SAFE_UPPER_WALLS) {
+                        if (direction === -1) {
+                            x0 += 1;
+                            x1 -= 1;
+                        } else {
+                            x0 -= 1;
+                            x1 += 1;
+                        }
+                    }
+                    v0 = findVertex(x1, y1 + (OFFSET_UPPER * direction), vertexComment);
+                    v1 = findVertex(x0, y0 + (OFFSET_UPPER * direction), vertexComment);
+                } else {
+                    continue;
+                }
+
+                if (isConflicted) continue; // Generate vertices only
+
+                ss += `sidedef { // ${sideid}\n`;
+                ss += `comment = "doubleHeight decal for line ${line.id}";\n`;
+                ss += `\tsector = 1;\n`;
+                ss += `\ttexturemiddle = "${getTexture(line.textureUpper)}";\n`;
+                ss += `\tcomment = ${JSON.stringify(JSON.stringify(comment))};\n`;
+                ss += "}\n\n";
+
+                ss += "linedef {\n";
+                ss += `\tv2 = ${v0};\n`;
+                ss += `\tv1 = ${v1};\n`;
+                ss += `\tsidefront = ${sideid++};\n`;
+                ss += `\tcomment = ${JSON.stringify(JSON.stringify(comment))};\n`;
+                ss += "}\n\n";
+            }
         }
 
         // things
@@ -641,6 +705,7 @@ class Parser {
             vs += "vertex {\n";
             vs += `\tx = ${vertex[0] || 0};\n`;
             vs += `\ty = ${vertex[1] || 0};\n`;
+            if (vertex[3]) vs += `\tcomment = ${JSON.stringify(JSON.stringify(vertex[3]))};\n`;
             vs += "}\n\n";
         }
 
