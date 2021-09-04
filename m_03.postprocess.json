@@ -1,0 +1,13 @@
+{
+    "deleteLines": [58, 61, 621, 610, 612, 606, 626, 627, 585, 471, 370, 362, 382, 300, 334, 102, 86, 78, 87, 12, 6, 8, 150, 257, 248, 252, 254, 250],
+    "deleteDecals": [215],
+    "defaultTextures": {
+        "floor": "FLAT017",
+        "ceilLow": "FLAT022",
+        "ceilHigh": "F_SKY1",
+        "floorHigh": "FLAT018"
+    },
+    "addLines": [
+        { "x0": 1152, "y0": 128, "x1": 1216, "y1": 128, "frontsector": 0, "backsector": 1 }
+    ]
+}
