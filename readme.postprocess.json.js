@@ -14,7 +14,8 @@ module.exports = {
     "defaultTextures": { // Change default floor/ceiling textures (instead of "floor" and "ceiling" by default) [optional]
         "floor": "FLAT017", // Default floor texture [optional]
         "ceilLow": "FLAT016", // Default ceiling for sectors with height 64 [optional]
-        "ceilHigh": "F_SKY1"  // Default ceiling for sectors with height 128 [optional]
+        "ceilHigh": "F_SKY1",  // Default ceiling for sectors with height 128 [optional]
+        "floorHigh": "FLAT018" // Default floor texture for sectors with height 128. If not specified, used floor textures specified above [optional]
     },
     "addLines": [{ // Add lines. Can be used to separate sectors with different heights [optional]
         "x0": 123, // [required]

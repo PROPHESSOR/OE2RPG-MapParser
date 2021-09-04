@@ -316,7 +316,7 @@ class Parser {
         ss += "}\n\n";
         ss += "sector {\n";
         ss += "\theightceiling = 128;\n";
-        ss += `\ttexturefloor = "${deftex.floor || 'floor'}";\n`;
+        ss += `\ttexturefloor = "${deftex.floorHigh || deftex.floor || 'floor'}";\n`;
         ss += `\ttextureceiling = "${deftex.ceilHigh || 'ceiling'}";\n`;
         ss += "}\n\n";
 
