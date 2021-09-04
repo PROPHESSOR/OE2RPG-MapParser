@@ -43,15 +43,23 @@ const THINGS_PROPS = {
     turnEast: 1 << 5, // >
     turnWest: 1 << 6, // <
     isUpper: 1 << 7, // ?
-    unknown8: 1 << 8,
-    unknown9: 1 << 9,
-    unknown10: 1 << 10,
     isDecal: 1 << 10,
-    unknown11: 1 << 11, // not blocking?
-    unknown12: 1 << 12,
-    unknown13: 1 << 13,
-    unknown14: 1 << 14,
-    unknown15: 1 << 15,
+    flag0: 1 << 0,
+    flag1: 1 << 1,
+    flag2: 1 << 2,
+    flag3: 1 << 3,
+    flag4: 1 << 4,
+    flag5: 1 << 5,
+    flag6: 1 << 6,
+    flag7: 1 << 7,
+    flag8: 1 << 8,
+    flag9: 1 << 9,
+    flag10: 1 << 10,
+    flag11: 1 << 11, // not blocking?
+    flag12: 1 << 12,
+    flag13: 1 << 13,
+    flag14: 1 << 14,
+    flag15: 1 << 15,
     upperOnly: 1 << 10,
     isNotFence: (1 << 1) | (1 << 11),
 }
@@ -280,8 +288,9 @@ class Parser {
                 flags: thing.flags || 0,
                 flags2: thing.flags2 || 0,
                 isUpper: Boolean(thing.flags && (1 << 7)),
-                isDoor: Boolean(thing.flags & THINGS_PROPS.unknown14 && thing.flags & THINGS_PROPS.unknown11),
-                isNotFence: Boolean(thing.flags & THINGS_PROPS.isNotFence && !(thing.flags & THINGS_PROPS.unknown10))
+                isDoor: Boolean(thing.flags & THINGS_PROPS.flag14 && thing.flags & THINGS_PROPS.flag11),
+                isNotFence: Boolean(thing.flags & THINGS_PROPS.isNotFence && !(thing.flags & THINGS_PROPS.flag10)),
+                isBanner: Boolean((thing.flags & THINGS_PROPS.flag15) && (thing.flags & THINGS_PROPS.flag11) && (thing.flags & THINGS_PROPS.flag10) && !(thing.flags & THINGS_PROPS.flag2) && thing.id !== 199) // FIXME:
             };
 
             decal.texture = typeof DECALS[thing.id] === 'function' ? DECALS[thing.id](decal) : DECALS[thing.id],
@@ -597,7 +606,7 @@ class Parser {
                 && (decal.z === 0
                     || decal.z === 64
                     || !decal.isNotFence
-                );
+                ) && !decal.isBanner;
 
             ss += "sidedef {\n";
             ss += "\tsector = 0;\n";
