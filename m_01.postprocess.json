@@ -30,5 +30,8 @@
         "floor": "FLAT017",
         "ceilLow": "FLAT016",
         "ceilHigh": "FLAT016"
-    }
+    },
+    "addLines": [
+        { "x0": 1024, "y0": 128, "x1": 1024, "y1": 192, "frontsector": 0, "backsector": 1 }
+    ]
 }
