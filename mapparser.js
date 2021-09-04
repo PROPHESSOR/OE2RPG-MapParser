@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2017-2018 DRRP-Team (PROPHESSOR, UsernameAK)
+ * Copyright (c) 2021 OE2RP-Team (PROPHESSOR)
  *
  * This software is released under the MIT License.
  * https://opensource.org/licenses/MIT
@@ -849,7 +849,7 @@ try {
         if (from) main(from, `${from}.ts`);
     });
 } catch (e) {
-    console.log("# === DRRP: MapParser === #");
+    console.log("# === OE2RP: MapParser === #");
 
     const args = process.argv;
 
