@@ -46,6 +46,7 @@ const THINGS_PROPS = {
     unknown8: 1 << 8,
     unknown9: 1 << 9,
     unknown10: 1 << 10,
+    isDecal: 1 << 10,
     unknown11: 1 << 11, // not blocking?
     unknown12: 1 << 12,
     unknown13: 1 << 13,
@@ -542,7 +543,7 @@ class Parser {
                 ss += `\theight = ${thing.z || 0};\n`;
                 ss += `\tid = ${(thing.x << 5) | thing.y};\n`;
                 ss += `\tcomment = "Will spawn ${thing.id}";\n`;
-            } else if (THINGS[thing.id.toString()]) {
+            } else if (THINGS[thing.id.toString()] && !(thing.flags & THINGS_PROPS.isDecal)) {
                 ss += "thing {\n";
                 ss += `\ttype = ${THINGS[thing.id.toString()]};\n`;
                 ss += `\tx = ${thing.x * 8};\n`;
@@ -555,7 +556,7 @@ class Parser {
                 ss += `\tx = ${thing.x * 8};\n`;
                 ss += `\ty = ${(256 - thing.y) * 8};\n`;
                 ss += `\theight = ${thing.z || 0};\n`;
-                ss += `\tcomment = "Unknown thing ${thing.id} ${(thing.flags1 || thing.flags || 0).toString(2)} ${(thing.flags2 || 0).toString(2)} at ${thing.z || '?'}";\n`;
+                ss += `\tcomment = "Unknown ${thing.flags & THINGS_PROPS.isDecal ? 'decal' : 'thing'} ${thing.id} ${(thing.flags1 || thing.flags || 0).toString(2)} ${(thing.flags2 || 0).toString(2)} at ${thing.z || '?'}";\n`;
             }
 
             ss += "\tskill1 = true;\n";
