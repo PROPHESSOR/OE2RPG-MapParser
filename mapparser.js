@@ -761,6 +761,40 @@ class Parser {
             ss += "}\n\n";
         }
 
+        const lineValidator = [["x0", "number"], ["y0", "number"], ["x1", "number"], ["y1", "number"], ["frontsector", "number"], ["backsector", "number"]]; // [propertyName, type]
+
+        // Additional lines by postprocess
+        if (pp && Array.isArray(pp.addLines)) {
+            for (const line of pp.addLines) {
+                if (!lineValidator.every(([prop, type]) => typeof line[prop] === type)) {
+                    console.warn('Skip invalid additinal line', line);
+                    continue;
+                }
+
+                const v0 = findVertex(line.x0, line.y0);
+                const v1 = findVertex(line.x1, line.y1);
+
+                ss += "sidedef {\n";
+                ss += `\tsector = ${line.frontsector};\n`;
+                ss += `\ttexturemiddle = "${line.texture || '-'}";\n`;
+                ss += "}\n\n";
+
+                ss += "sidedef {\n";
+                ss += `\tsector = ${line.backsector};\n`;
+                ss += `\ttexturemiddle = "${line.texture || '-'}";\n`;
+                ss += "}\n\n";
+
+                ss += "linedef {\n";
+                ss += `\tv1 = ${v0};\n`;
+                ss += `\tv2 = ${v1};\n`;
+                ss += `\tcomment = ${JSON.stringify(JSON.stringify(line))};\n`
+                ss += `\tsidefront = ${sideid++};\n`;
+                ss += `\tsideback = ${sideid++};\n`;
+                ss += "\ttwosided = true;\n";
+                ss += "}\n\n";
+            }
+        }
+
         let vs = "";
         for (const vertex of vertices) {
             // if (!(Number.isSafeInteger(vertex[0]) && Number.isSafeInteger(vertex[0]))) {

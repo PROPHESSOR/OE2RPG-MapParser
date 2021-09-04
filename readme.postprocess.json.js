@@ -15,5 +15,14 @@ module.exports = {
         "floor": "FLAT017", // Default floor texture [optional]
         "ceilLow": "FLAT016", // Default ceiling for sectors with height 64 [optional]
         "ceilHigh": "F_SKY1"  // Default ceiling for sectors with height 128 [optional]
-    }
+    },
+    "addLines": [{ // Add lines. Can be used to separate sectors with different heights [optional]
+        "x0": 123, // [required]
+        "y0": 123, // [required]
+        "x1": 123, // [required]
+        "y1": 123, // [required]
+        "frontsector": 0 | 1, // [required]
+        "backsector": 0 | 1, // [required]
+        "texture": "WALL0", // [optional]
+    }]
 };
