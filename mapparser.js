@@ -28,7 +28,7 @@ const GENERATE_DOORS = true;
 const GENERATE_UPPER_WALLS = true;
 const GENERATE_SAFE_UPPER_WALLS = true;
 
-const OFFSET_DECAL = 0.25; // Distance between decals
+const OFFSET_DECAL = 0.5; // Distance between decals
 const OFFSET_UPPER = 0.2; // Distance between wall and upper texture decal
 
 const SHRINK_UPPER_WALL = 0.3; // for GENERATE_SAFE_UPPER_WALLS
@@ -544,6 +544,9 @@ class Parser {
 
             // Skip if it is a decal
             if (isDecal && !GENERATE_THINGS_FOR_KNOWN_DECALS && Object.keys(DECALS).includes(String(thing.id)))
+                continue;
+            
+            if (THINGS[thing.id.toString()] === 'DECAL' && !GENERATE_THINGS_FOR_KNOWN_DECALS)
                 continue;
 
             const z = thing.z ? thing.z - 64 : 0;
