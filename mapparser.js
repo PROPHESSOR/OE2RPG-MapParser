@@ -540,8 +540,10 @@ class Parser {
         // things
         if (GENERATE_THINGS)
         for (const thing of things) {
+            const isDecal = Boolean(thing.flags & THINGS_PROPS.isDecal);
+
             // Skip if it is a decal
-            if (!GENERATE_THINGS_FOR_KNOWN_DECALS && Object.keys(DECALS).includes(String(thing.id)))
+            if (isDecal && !GENERATE_THINGS_FOR_KNOWN_DECALS && Object.keys(DECALS).includes(String(thing.id)))
                 continue;
 
             const z = thing.z ? thing.z - 64 : 0;
@@ -554,7 +556,7 @@ class Parser {
                 ss += `\theight = ${z};\n`;
                 ss += `\tid = ${(thing.x << 5) | thing.y};\n`;
                 ss += `\tcomment = "Will spawn ${thing.id}";\n`;
-            } else if (THINGS[thing.id.toString()] && !(thing.flags & THINGS_PROPS.isDecal)) {
+            } else if (THINGS[thing.id.toString()] && !isDecal) {
                 ss += "thing {\n";
                 ss += `\ttype = ${THINGS[thing.id.toString()]};\n`;
                 ss += `\tx = ${thing.x * 8};\n`;
