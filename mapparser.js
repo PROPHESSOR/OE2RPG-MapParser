@@ -205,7 +205,7 @@ class Parser {
         for (const thing of things) {
             if (!DECALS[thing.id.toString()]) continue;
 
-            const isNotFence = (thing.flags & 2050) ? 0 : 1;
+            const isNotFence = (thing.flags & THINGS_PROPS.isNotFence) ? 0 : OFFSET_DECAL;
 
             const overlapCode = `${thing.x}|${thing.y}`;
 
@@ -527,8 +527,8 @@ class Parser {
                 ss += "}\n\n";
 
                 ss += "linedef {\n";
-                ss += `\tv2 = ${v0};\n`;
-                ss += `\tv1 = ${v1};\n`;
+                ss += `\tv1 = ${v0};\n`;
+                ss += `\tv2 = ${v1};\n`;
                 ss += "\ttwosided = true;\n";
                 ss += `\tsidefront = ${sideid++};\n`;
                 ss += `\tsideback = ${sideid++};\n`;
@@ -609,14 +609,14 @@ class Parser {
                 ) && !decal.isBanner;
 
             ss += "sidedef {\n";
-            ss += "\tsector = 0;\n";
+            ss += `\tsector = ${isDoubleHeight ? 1 : 0};\n`;
             ss += `\ttexturemiddle = "${decal.texture}";\n`;
             if (needsOffset)
                 ss += `\toffsety = -${decal.texture[0] === 'W' ? 117 : 64};\n`;
             ss += "}\n\n";
 
             ss += "sidedef {\n";
-            ss += "\tsector = 0;\n";
+            ss += `\tsector = ${isDoubleHeight ? 1 : 0};\n`;
             ss += `\ttexturemiddle = "${decal.texture}";\n`;
             // ss += `\tscalex_mid = -1.0;\n`; // Have some bugs with pre-scaled decals
             if (needsOffset)
