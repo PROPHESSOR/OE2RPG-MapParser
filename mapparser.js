@@ -600,27 +600,40 @@ class Parser {
             const v1 = findVertex(decal.x1, (2048 - decal.y1));
 
             const isDoubleHeight = doubleHeightStats.double > doubleHeightStats.single;
+            
+            const offsetBase = decal.texture[0] === 'W' ? 117 : 64;
 
-            const needsOffset = !decal.isDoor
+            let offsetY = 0;
+
+            if (decal.z === 32 || decal.z === 34) {
+                offsetY = offsetBase + (offsetBase / 2);
+                console.log(decal.z);
+            } else if (!decal.isDoor
                 && isDoubleHeight
                 && (decal.z === 0
                     || decal.z === 64
                     || !decal.isNotFence
-                ) && !decal.isBanner;
+                )) {
+                offsetY = offsetBase;
+            }
+
+            if (decal.z === 128) {
+                offsetY = 0;
+            }
 
             ss += "sidedef {\n";
             ss += `\tsector = ${isDoubleHeight ? 1 : 0};\n`;
             ss += `\ttexturemiddle = "${decal.texture}";\n`;
-            if (needsOffset)
-                ss += `\toffsety = -${decal.texture[0] === 'W' ? 117 : 64};\n`;
+            if (offsetY)
+                ss += `\toffsety = -${offsetY};\n`;
             ss += "}\n\n";
 
             ss += "sidedef {\n";
             ss += `\tsector = ${isDoubleHeight ? 1 : 0};\n`;
             ss += `\ttexturemiddle = "${decal.texture}";\n`;
             // ss += `\tscalex_mid = -1.0;\n`; // Have some bugs with pre-scaled decals
-            if (needsOffset)
-                ss += `\toffsety = -${decal.texture[0] === 'W' ? 117 : 64};\n`;
+            if (offsetY)
+                ss += `\toffsety = -${offsetY};\n`;
             ss += "}\n\n";
 
             ss += "linedef {\n";
