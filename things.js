@@ -11,8 +11,8 @@ module.exports = {
     // "7": // Арбалет
     // "8": // Меч
     "17": 15500, // Orc Recruit
-    "18": 15551, // Orc Raider
-    "19": 15552, // Orc Berserker
+    "18": 15501, // Orc Raider
+    "19": 15502, // Orc Berserker
     "20": 15510, // Ratling
     "21": 15511, // Rat
     "22": 15512, // Prowler
