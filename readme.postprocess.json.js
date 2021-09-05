@@ -1,7 +1,7 @@
 module.exports = {
     "deleteLines": [0, 1, 2], // Do not generate lines with these ids [optional]
-    "conflictedUpperWalls": [0, 1, 2], // Do not generate upper walls decals for lines with these ids. Only vertices with comments will be generated, so you can create these lines manually. Use it for doors and perpendicular lines [optional]
-    "deleteUpperWalls": [0, 1, 2], // Do not generate upper walls decals for lines with these ids. Even vertices will not be generated [optional]
+    "conflictedUpperTextures": [0, 1, 2], // Do not generate upper walls decals for lines with these ids. Only vertices with comments will be generated, so you can create these lines manually. Use it for doors and perpendicular lines [optional]
+    "deleteUpperTextures": [0, 1, 2], // Do not generate upper walls decals for lines with these ids. Even vertices will not be generated [optional]
     "changeLines": { // Change lines with these ids [optional]
         "0": { // Line id
             "x0": 1423, // Change x0 value of a line after scaling (in UDMF map units) [optional]
