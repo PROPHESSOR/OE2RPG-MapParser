@@ -605,9 +605,10 @@ class Parser {
 
             let offsetY = 0;
 
-            if (decal.z === 32 || decal.z === 34) {
-                offsetY = offsetBase + (offsetBase / 2);
-                console.log(decal.z);
+            const map = (value, [fromMin, fromMax], [toMin, toMax]) => (((value - fromMin) * (toMax - toMin)) / (fromMax - fromMin)) + toMin;
+
+            if (decal.z) {
+                offsetY = map(decal.z, [0, 128], [offsetBase * 2, 0]);
             } else if (!decal.isDoor
                 && isDoubleHeight
                 && (decal.z === 0
@@ -615,10 +616,6 @@ class Parser {
                     || !decal.isNotFence
                 )) {
                 offsetY = offsetBase;
-            }
-
-            if (decal.z === 128) {
-                offsetY = 0;
             }
 
             ss += "sidedef {\n";
