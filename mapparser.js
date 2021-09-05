@@ -597,6 +597,8 @@ class Parser {
             // if (DOOR_IDS.includes(decal.id)) continue;
             if (pp && pp.deleteDecals && pp.deleteDecals.includes(decal.tid))
                 continue;
+            
+            if (decal.id === 162) continue; // Ignore door sides
 
             const v0 = findVertex(decal.x0, (2048 - decal.y0));
             const v1 = findVertex(decal.x1, (2048 - decal.y1));
