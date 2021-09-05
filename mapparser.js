@@ -426,7 +426,7 @@ class Parser {
             ss += "}\n\n";
 
             // Generate decals for upper wall texture
-            if (GENERATE_UPPER_WALLS && isDoubleHeight) {
+            if (GENERATE_UPPER_WALLS && isDoubleHeight && line.textureLower !== line.textureUpper) {
                 // Vertical/Horizontal/Diagonal
                 const isVertical = x0 === x1;
                 const isHorizontal = y0 === y1;
