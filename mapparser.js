@@ -12,6 +12,7 @@ const ByteTools = require("./ByteTools");
 
 const THINGS = require("./things");
 const DECALS = require("./decals");
+const OPCODES = require("./opcodes");
 
 const Config = {
     "width": 768,
@@ -20,7 +21,7 @@ const Config = {
 const mh = [];
 
 const GENERATE_LINES = true;
-const GENERATE_THINGS = false;
+const GENERATE_THINGS = true;
 const GENERATE_THINGS_FOR_KNOWN_DECALS = false;
 const GENERATE_DECALS = true;
 const GENERATE_SAFE_DECALS = true;
@@ -948,7 +949,11 @@ class Parser {
             const body = [];
 
             for (const code of slice) {
-                body.push(`// OPCODE ${code.opcode} (${code.arg0}, ${code.arg1})`);
+                if (OPCODES[code.opcode]) {
+                    body.push(...OPCODES[code.opcode](code.arg0, code.arg1));
+                } else {
+                    body.push(`// OPCODE ${code.opcode} (${code.arg0}, ${code.arg1})`);
+                }
             }
 
             lines.push(...body.map(x => '    ' + x));
