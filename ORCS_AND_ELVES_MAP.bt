@@ -79,21 +79,19 @@ struct {
 } triggers_coord[triggersCount];
 
 struct {
-    uint id : 10;
-    uint unk2 : 7;
-    uint unk3 : 3;
-    uint unk4 : 1;
+    uint triggerID : 9;
+    uint bytecodeOffset : 11;
+    uint bytecodeLength : 10;
+    uint flags : 2;
 } triggers_ids[triggersCount];
 
-struct SCRIPTS_HEADER {
-    ushort scriptsCount;
-} scripts_header;
+ushort bytecodeCount;
 
-struct SCRIPTS_ITEM {
+struct BYTECODE_ITEM {
     byte opcode;
     int arg0;
     int arg1;
-} scripts_item[scripts_header.scriptsCount];
+} bytecode_item[bytecodeCount];
 
 byte blockmap[512];
 

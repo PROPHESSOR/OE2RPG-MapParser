@@ -20,7 +20,7 @@ const Config = {
 const mh = [];
 
 const GENERATE_LINES = true;
-const GENERATE_THINGS = true;
+const GENERATE_THINGS = false;
 const GENERATE_THINGS_FOR_KNOWN_DECALS = false;
 const GENERATE_DECALS = true;
 const GENERATE_SAFE_DECALS = true;
@@ -311,13 +311,16 @@ class Parser {
         const getX = x => (x * 64) + 32;
         const getY = y => (32 * 64) - (y * 64) - 32;
 
+        const readBits = (packed, size, offset = 0) =>
+            (packed & (((1 << size) - 1) << offset)) >> offset;
+
         const scripts = [];
 
         for (let i = 0; i < scriptsCount; i++) {
-            const packedInt = file.readInt16LE();
+            const packedInt = file.readUInt16LE();
 
-            const x = (packedInt & 0x1F);
-            const y = ((packedInt & 0x3E0) >> 5);
+            const x = readBits(packedInt, 5);
+            const y = readBits(packedInt, 5, 5);
 
             scripts.push({
                 x,
@@ -327,6 +330,15 @@ class Parser {
                 id: i,
                 linked: false
             });
+        }
+
+        for (let i = 0; i < scriptsCount; i++) {
+            const packedInt = file.readUInt32LE();
+
+            scripts[i].scriptId = readBits(packedInt, 9);
+            scripts[i].bytecodeOffset = readBits(packedInt, 11, 9);
+            scripts[i].bytecodeLength = readBits(packedInt, 10, 9 + 11);
+            scripts[i].flags = readBits(packedInt, 2, 9 + 11 + 10);
         }
 
         return scripts;
@@ -878,6 +890,7 @@ class Parser {
             ss += `\ty = ${script.mapY};\n`;
             ss += `\tspecial = 80;\n`;
             ss += `\targ0 = ${script.id};\n`;
+            ss += `\tcomment = ${JSON.stringify(JSON.stringify(script))};\n`;
             ss += "\tskill1 = true;\n";
             ss += "\tskill2 = true;\n";
             ss += "\tskill3 = true;\n";

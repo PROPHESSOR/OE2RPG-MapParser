@@ -119,6 +119,40 @@ module.exports = class ByteTools {
         return tmp;
     }
 
+    // custom size
+
+    readIntLE(size) {
+        const tmp = this.buffer.readIntLE(this.offset, size);
+
+        this.offset += size;
+
+        return tmp;
+    }
+
+    readUIntLE(size) {
+        const tmp = this.buffer.readUIntLE(this.offset, size);
+
+        this.offset += size;
+
+        return tmp;
+    }
+
+    readIntBE(size) {
+        const tmp = this.buffer.readIntBE(this.offset, size);
+
+        this.offset += size;
+
+        return tmp;
+    }
+
+    readUIntBE(size) {
+        const tmp = this.buffer.readUIntBE(this.offset, size);
+
+        this.offset += size;
+
+        return tmp;
+    }
+
     // seek
 
     // int8
