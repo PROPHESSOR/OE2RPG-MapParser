@@ -144,5 +144,6 @@ module.exports = {
 
 
     "mapspot": 9001, //    Map Spot
-    "notifier": 10900 //    Developer notifier
+    "notifier": 10900, //    Developer notifier
+    "trigger": 10999 // Script trigger
 };
