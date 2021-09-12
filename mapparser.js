@@ -86,7 +86,7 @@ class Parser {
 
         fs.writeFileSync(this.to, this.generate(map.lines, texmap, map.things, map.decals, map.bspheader, map.scripts, preprocess));
 
-        fs.writeFileSync(this.to + '.ACS', this.generateScripts(map.scripts, map.bytecode));
+        fs.writeFileSync(this.to + '.ACS', this.generateScripts(map.scripts, map.bytecode, map.things));
 
         this.display(map.lines, map.count, map.things, map.decals);
     }
@@ -936,8 +936,16 @@ class Parser {
         return header + vs + ss;
     }
 
-    generateScripts(scripts, bytecode) {
+    generateScripts(scripts, bytecode, things) {
         const outScripts = [];
+
+        const lookupEventVar = arg2 => {
+            let ii = ((((arg2 & 0xFFFF0000) >> 16)) & 0xFFFF);
+            if (ii === 0) return 0;
+            let i = 0;
+            while ((1 << (i++)) !== ii && i < 31);
+            return i;
+        }
 
         for (const script of scripts) {
             const lines = [];
@@ -949,11 +957,15 @@ class Parser {
             const body = [];
 
             for (const code of slice) {
-                if (OPCODES[code.opcode]) {
-                    body.push(...OPCODES[code.opcode](code.arg0, code.arg1));
-                } else {
-                    body.push(`// OPCODE ${code.opcode} (${code.arg0}, ${code.arg1})`);
-                }
+
+                const line = [
+                    `if(arg2 == ${lookupEventVar()})`,
+                    OPCODES.getACS(code.opcode, code.arg0, code.arg1, things) || 'Delay(0);',
+                    '//',
+                    OPCODES.getIR(code.opcode, code.arg0, code.arg1) || `OPCODE ${code.opcode} (${code.arg0}, ${code.arg1})`
+                ];
+
+                body.push(line.join(' '));
             }
 
             lines.push(...body.map(x => '    ' + x));
