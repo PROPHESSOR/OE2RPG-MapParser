@@ -85,6 +85,8 @@ class Parser {
 
         fs.writeFileSync(this.to, this.generate(map.lines, texmap, map.things, map.decals, map.bspheader, map.scripts, preprocess));
 
+        fs.writeFileSync(this.to + '.ACS', this.generateScripts(map.scripts, map.bytecode));
+
         this.display(map.lines, map.count, map.things, map.decals);
     }
 
@@ -152,12 +154,15 @@ class Parser {
 
         const scripts = this.parseScripts(file);
 
+        const bytecode = this.parseBytecode(file);
+
         return {
             lines,
             count,
             things,
             decals,
             scripts,
+            bytecode,
             bspheader
         };
     }
@@ -342,6 +347,22 @@ class Parser {
         }
 
         return scripts;
+    }
+
+    parseBytecode(file = new ByteTools()) {
+        const bytecodeCount = file.readUInt16LE();
+
+        const bytecode = [];
+
+        for (let i = 0; i < bytecodeCount; i++) {
+            bytecode.push({
+                opcode: file.readUInt8(),
+                arg0: file.readUInt32LE(),
+                arg1: file.readUInt32LE()
+            });
+        }
+
+        return bytecode;
     }
 
     generate(lines, texmap, things, decals, bspheader, scripts, postprocess) {
@@ -912,6 +933,32 @@ class Parser {
         }
 
         return header + vs + ss;
+    }
+
+    generateScripts(scripts, bytecode) {
+        const outScripts = [];
+
+        for (const script of scripts) {
+            const lines = [];
+
+            lines.push(`Script ${script.scriptId} (void) {`);
+            
+            const slice = bytecode.slice(script.bytecodeOffset, script.bytecodeOffset + script.bytecodeLength);
+
+            const body = [];
+
+            for (const code of slice) {
+                body.push(`// OPCODE ${code.opcode} (${code.arg0}, ${code.arg1})`);
+            }
+
+            lines.push(...body.map(x => '    ' + x));
+
+            lines.push(`}`);
+
+            outScripts.push(lines.join('\n'));
+        }
+            
+        return outScripts.join('\n\n');
     }
 
     display(lines, count, things, decals) {

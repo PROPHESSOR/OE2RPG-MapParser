@@ -5,4 +5,5 @@ node_modules
 maps/*.wad.backup*
 *.ts
 *.TEXTMAP
+*.TEXTMAP.ACS
 *.bsp
