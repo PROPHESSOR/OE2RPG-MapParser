@@ -36,8 +36,9 @@ module.exports = {
     "38": 15560, // Worg Pup
     "39": 15561, // Warhound
     "40": 15562, // Cerebus
-    "42": 15570, // Crusher
-    "43": 15571, // Shaker
+    "41": 15570, // Troll
+    "42": 15571, // Crusher
+    "43": 15572, // Shaker
     "44": 15580, // Vaettir Drone
     "45": 15581, // Conjurer
     "46": 15582, // Necromancer
