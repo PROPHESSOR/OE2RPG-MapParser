@@ -308,26 +308,25 @@ class Parser {
         const scriptsCount = file.readUInt16LE();
         console.log(`Found ${scriptsCount} scripts`);
 
-        // const unknown = file.readUInt8();
-
-        // console.log(`Unknown ${unknown}`);
-
-        // file.readUInt8();
-        // file.readUInt8();
-        // file.readUInt8();
-        // file.readUInt8();
+        const getX = x => (x * 64) + 32;
+        const getY = y => (32 * 64) - (y * 64) - 32;
 
         const scripts = [];
 
         for (let i = 0; i < scriptsCount; i++) {
             const packedInt = file.readInt16LE();
 
-            // console.log(packedInt, packedInt.toString(2));
-
             const x = (packedInt & 0x1F);
             const y = ((packedInt & 0x3E0) >> 5);
-            scripts.push([x, y]);
-            console.log(`Script ${i} (${x};${y})`);
+
+            scripts.push({
+                x,
+                y,
+                mapX: getX(x),
+                mapY: getY(y),
+                id: i,
+                linked: false
+            });
         }
 
         return scripts;
@@ -581,30 +580,40 @@ class Parser {
             if (THINGS[thing.id.toString()] === 'DECAL' && !GENERATE_THINGS_FOR_KNOWN_DECALS)
                 continue;
 
+            const x = thing.x * 8;
+            const y = (256 - thing.y) * 8;
             const z = thing.z ? thing.z - 64 : 0;
             
             if (thing.flags & 1) { // Will spawn
                 ss += "thing {\n";
                 ss += `\ttype = ${THINGS.mapspot};\n`;
-                ss += `\tx = ${thing.x * 8};\n`;
-                ss += `\ty = ${(256 - thing.y) * 8};\n`;
+                ss += `\tx = ${x};\n`;
+                ss += `\ty = ${y};\n`;
                 ss += `\theight = ${z};\n`;
                 ss += `\tid = ${(thing.x << 5) | thing.y};\n`;
                 ss += `\tcomment = "Will spawn ${thing.id}";\n`;
             } else if (THINGS[thing.id.toString()] && !isDecal) {
                 ss += "thing {\n";
                 ss += `\ttype = ${THINGS[thing.id.toString()]};\n`;
-                ss += `\tx = ${thing.x * 8};\n`;
-                ss += `\ty = ${(256 - thing.y) * 8};\n`;
+                ss += `\tx = ${x};\n`;
+                ss += `\ty = ${y};\n`;
                 ss += `\theight = ${z};\n`;
                 ss += `\tcomment = "${thing.id}";\n`;
             } else {
                 ss += "thing {\n";
                 ss += `\ttype = ${THINGS.notifier};\n`;
-                ss += `\tx = ${thing.x * 8};\n`;
-                ss += `\ty = ${(256 - thing.y) * 8};\n`;
+                ss += `\tx = ${x};\n`;
+                ss += `\ty = ${y};\n`;
                 ss += `\theight = ${z};\n`;
                 ss += `\tcomment = "Unknown ${thing.flags & THINGS_PROPS.isDecal ? 'decal' : 'thing'} ${thing.id} ${(thing.flags1 || thing.flags || 0).toString(2)} ${(thing.flags2 || 0).toString(2)} at ${thing.z || '?'}";\n`;
+            }
+
+            const [script] = scripts.filter(script => script.mapX === x && script.mapY === y);
+
+            if (script) {
+                ss += `\tspecial = 80;\n`;
+                ss += `\targ0 = ${script.id};\n`;
+                script.linked = true;
             }
 
             ss += "\tskill1 = true;\n";
@@ -860,22 +869,15 @@ class Parser {
         }
 
         // Generate script triggers
+        for (const script of scripts) {
+            if (script.linked) continue;
 
-        const getX = x => (x * 64) + 32;
-        const getY = y => (32 * 64) - (y * 64) - 32;
-        const convertToDoomGrid = (x, y) => [getX(x), getY(y)];
-
-        for (let i = 0; i < scripts.length; i++) {
-            const script = scripts[i];
-            const [x, y] = convertToDoomGrid(...script);
-
-            ss += `thing { // Script trigger ${i}\n`;
+            ss += `thing { // Script trigger ${script.id}\n`;
             ss += `\ttype = ${THINGS.trigger};\n`;
-            ss += `\tx = ${x};\n`;
-            ss += `\ty = ${y};\n`;
+            ss += `\tx = ${script.mapX};\n`;
+            ss += `\ty = ${script.mapY};\n`;
             ss += `\tspecial = 80;\n`;
-            ss += `\targ0 = ${i};\n`;
-            // ss += `\tcomment = "Unknown ${thing.flags & THINGS_PROPS.isDecal ? 'decal' : 'thing'} ${thing.id} ${(thing.flags1 || thing.flags || 0).toString(2)} ${(thing.flags2 || 0).toString(2)} at ${thing.z || '?'}";\n`;
+            ss += `\targ0 = ${script.id};\n`;
             ss += "\tskill1 = true;\n";
             ss += "\tskill2 = true;\n";
             ss += "\tskill3 = true;\n";
