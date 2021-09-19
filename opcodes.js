@@ -11,9 +11,19 @@ const readBits = (packed, size, offset = 0) =>
 const ITEMS = {
     0: 'OE2HealthPotion',
     4: 'OE2PileOfCoins',
-    256: 'OE2LgHealthPotion',
+    256: 'OE2LargeHealthPotion',
+    258: 'OE2StrengthRing',
     512: 'OE2StrengthPotion',
+    515: 'OE2CrossbowBolt',
     768: 'OE2AccuracyPotion',
+    770: 'OE2DefenseRing',
+    1024: 'OE2DefensePotion',
+    1280: 'OE2HastePotion',
+    1283: 'OE2ShrinkOrb',
+    1536: 'OE2RemedyPotion',
+    1792: 'OE2TrollsBlood',
+    2048: 'OE2ChampionBrew',
+    2304: 'OE2AvoidancePotion',
     2560: 'OE2ArmorKit',
 };
 
@@ -59,16 +69,18 @@ module.exports = {
                             return "if(CheckInventory(\"" + statType + "\") < " + (arg1) + ") { ACS_NamedExecuteWait(\"window\", 0, getString(" + (((arg >> 16) & 0xFFFF)) + ")); terminate; }";
                     }
                 }
-            case 19:
-                return "ScriptCall(\"ConversationController\", \"SetArgument\", container" + (getScriptVar((arg0), (arg >> 8 & 0xFF))) + ", arg2 + 1);";
             case 11:
                 return "ScriptCall(\"ConversationController\", \"SetArgument\", container" + (getScriptVar((arg0), (arg >> 8 & 0xFF))) + ", " + ((arg >> 16) & 0xFFFF) + ");";
+            case 15:
+                return `Thing_Remove(ActivatorTID());`;
+            case 18:
+                return "Thing_Remove(" + ((arg0) << 5 | (arg1)) + ");";
+            case 19:
+                return "ScriptCall(\"ConversationController\", \"SetArgument\", container" + (getScriptVar((arg0), (arg >> 8 & 0xFF))) + ", arg2 + 1);";
             case 33:
                 return "Delay(0); /* SHOP */";
             case 37:
                 return "Delay(" + arg * 35 / 1000 + ");";
-            case 18:
-                return "Thing_Remove(" + ((arg0) << 5 | (arg1)) + ");";
             case 7:
                 {
                     const thing = things[(arg0)];
