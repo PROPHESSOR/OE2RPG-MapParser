@@ -906,6 +906,7 @@ class Parser {
         // Generate script triggers
         for (const script of scripts) {
             if (script.linked) continue;
+            if (pp.deleteTriggers && pp.deleteTriggers.includes(script.scriptId)) continue;
 
             ss += `thing { // Script trigger ${script.id}\n`;
             ss += `\ttype = ${THINGS.trigger};\n`;
