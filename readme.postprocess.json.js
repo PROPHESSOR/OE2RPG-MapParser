@@ -25,5 +25,8 @@ module.exports = {
         "frontsector": 0 | 1, // [required]
         "backsector": 0 | 1, // [required]
         "texture": "WALL0", // [optional]
-    }]
+    }],
+    "scripts": { // ACS configuration [optional]
+        "mapId": "CAVERNS" // MAPINFO map id [optional]
+    }
 };

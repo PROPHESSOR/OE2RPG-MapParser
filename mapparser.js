@@ -77,16 +77,16 @@ class Parser {
         const map = this.parseMap(this.from);
 
         const postprocessFilename = `${this.from.slice(0, -3)}postprocess.json`;
-        let preprocess = null;
+        let postprocess = null;
 
         if (fs.existsSync(postprocessFilename)) {
             console.log(`Using ${postprocessFilename}`);
-            preprocess = require('./' + postprocessFilename);
+            postprocess = require('./' + postprocessFilename);
         }
 
-        fs.writeFileSync(this.to, this.generate(map.lines, texmap, map.things, map.decals, map.bspheader, map.scripts, preprocess));
+        fs.writeFileSync(this.to, this.generate(map.lines, texmap, map.things, map.decals, map.bspheader, map.scripts, postprocess));
 
-        fs.writeFileSync(this.to + '.ACS', this.generateScripts(map.scripts, map.bytecode, map.things));
+        fs.writeFileSync(this.to + '.ACS', this.generateScripts(map.scripts, map.bytecode, map.things, postprocess.scripts || {}));
 
         this.display(map.lines, map.count, map.things, map.decals);
     }
@@ -938,12 +938,12 @@ class Parser {
         return header + vs + ss;
     }
 
-    generateScripts(scripts, bytecode, things) {
+    generateScripts(scripts, bytecode, things, spp) {
         const outScripts = [];
 
         outScripts.push(`#include "zcommon.acs"
 
-str MAPNAME = "MAPNAME";
+str MAPNAME = "${spp.mapId || 'MAPNAME'}";
 
 function str getString(int id) {
     return StrParam(l:StrParam(s:"OE2RP_", s:MAPNAME, s:"_", i:id));

@@ -9,12 +9,12 @@ const readBits = (packed, size, offset = 0) =>
     (packed & (((1 << size) - 1) << offset)) >> offset;
 
 const ITEMS = {
-    0: 'Health Potion',
-    4: 'Coins',
-    256: 'Lg Health Potion',
-    512: 'Strength Potion',
-    768: 'Accuracy Potion',
-    2560: 'Armor Kit',
+    0: 'OE2HealthPotion',
+    4: 'OE2PileOfCoins',
+    256: 'OE2LgHealthPotion',
+    512: 'OE2StrengthPotion',
+    768: 'OE2AccuracyPotion',
+    2560: 'OE2ArmorKit',
 };
 
 function getThingName(thingId) {
@@ -108,7 +108,9 @@ module.exports = {
                     amount = 1;
                 }
 
-                return [`Print(s:"Give item ${ITEMS[item] || item} x${amount}");`];
+                return ITEMS[item]
+                    ? `GiveInventory("${ITEMS[item]}", ${amount});`
+                    : `Print(s:"Give item ${ITEMS[item] || item} x${amount}");`;
             }
         }
 
