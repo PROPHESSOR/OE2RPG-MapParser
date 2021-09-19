@@ -994,7 +994,7 @@ Script 666 ENTER{
 
             const lines = [];
 
-            lines.push(`Script ${script.scriptId} (void) {`);
+            lines.push(`Script ${script.scriptId} (int arg0, int arg1, int arg2) { // (${script.x};${script.y}) (${script.mapX};${script.mapY})`);
             
             const slice = bytecode.slice(script.bytecodeOffset, script.bytecodeOffset + script.bytecodeLength);
 
