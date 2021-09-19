@@ -37,6 +37,8 @@ const SHRINK_UPPER_WALL = 0.3; // for GENERATE_SAFE_UPPER_WALLS
 // Generate doors for lines with these lower texture ids
 const DOOR_IDS = [16, 18, 19, 23, 25, 27, 28, 29];
 
+const REMOVE_TRIGGERS_WITH_THESE_SINGLE_OPCODES = [15, 16];
+
 const THINGS_PROPS = {
     spawnLater: 1 << 0,
     turnSouth: 1 << 3,
@@ -909,8 +911,8 @@ class Parser {
             if (pp.deleteTriggers && pp.deleteTriggers.includes(script.scriptId)) continue;
             const isDisabled = pp.deleteTriggers && pp.disableTriggers.includes(script.scriptId);
 
-            // Do not generate door close triggers
-            if (script.bytecodeLength === 1 && bytecode[script.bytecodeOffset].opcode === 16) {
+            // Do not generate junk triggers
+            if (script.bytecodeLength === 1 && REMOVE_TRIGGERS_WITH_THESE_SINGLE_OPCODES.includes(bytecode[script.bytecodeOffset].opcode)) {
                 continue;
             }
 
@@ -1005,8 +1007,8 @@ Script 666 ENTER{
             
             const slice = bytecode.slice(script.bytecodeOffset, script.bytecodeOffset + script.bytecodeLength);
 
-            // Do not generate door close junk
-            if (slice.length === 1 && slice[0].opcode === 16) {
+            // Do not generate junk scripts
+            if (slice.length === 1 && REMOVE_TRIGGERS_WITH_THESE_SINGLE_OPCODES.includes(slice[0].opcode)) {
                 continue;
             }
 
