@@ -8,5 +8,8 @@
         "ceilLow": "FLAT010",
         "ceilHigh": "F_SKY1",
         "floorHigh": "FLAT017"
+    },
+    "scripts": {
+        "mapId": "ELLANDRA"
     }
 }

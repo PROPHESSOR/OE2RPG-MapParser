@@ -6,5 +6,8 @@
         "floor": "FLAT018",
         "ceilLow": "FLAT022",
         "ceilHigh": "F_SKY1"
+    },
+    "scripts": {
+        "mapId": "DARKFOREST"
     }
 }

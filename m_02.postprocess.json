@@ -6,5 +6,8 @@
         "floor": "FLAT017",
         "ceilLow": "FLAT016",
         "ceilHigh": "FLAT016"
+    },
+    "scripts": {
+        "mapId": "DWARKAR"
     }
 }
