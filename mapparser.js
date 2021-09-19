@@ -948,9 +948,17 @@ class Parser {
         }
 
         for (const script of scripts) {
-            const lines = [];
+            const scriptVars = [];
 
-            lines.push(`Script ${script.scriptId} (void) {`);
+            const getScriptVar = (x, y) => {
+                const key = `${x};${y}`;
+
+                if (!scriptVars.includes(key)) scriptVars.push(key);
+
+                return scriptVars.indexOf(key);
+            }
+
+            const lines = [];
             
             const slice = bytecode.slice(script.bytecodeOffset, script.bytecodeOffset + script.bytecodeLength);
 
@@ -960,7 +968,7 @@ class Parser {
 
                 const line = [
                     `if(arg2 == ${lookupEventVar()})`,
-                    OPCODES.getACS(code.opcode, code.arg0, code.arg1, things) || 'Delay(0);',
+                    OPCODES.getACS(code.opcode, code.arg0, code.arg1, things, getScriptVar) || 'Delay(0);',
                     '//',
                     OPCODES.getIR(code.opcode, code.arg0, code.arg1) || `OPCODE ${code.opcode} (${code.arg0}, ${code.arg1})`
                 ];
@@ -970,6 +978,9 @@ class Parser {
 
             lines.push(...body.map(x => '    ' + x));
 
+            // TODO: Generate script vars
+
+            lines.unshift(`Script ${script.scriptId} (void) {`);
             lines.push(`}`);
 
             outScripts.push(lines.join('\n'));
