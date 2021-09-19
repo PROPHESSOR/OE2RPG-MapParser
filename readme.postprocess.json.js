@@ -30,4 +30,5 @@ module.exports = {
         "mapId": "CAVERNS" // MAPINFO map id [optional]
     },
     "deleteTriggers": [123], // Delete trigger things with specified script ids [optional]
+    "disableTriggers": [123], // Disable trigger things with specified script ids [optional]
 };

@@ -907,9 +907,10 @@ class Parser {
         for (const script of scripts) {
             if (script.linked) continue;
             if (pp.deleteTriggers && pp.deleteTriggers.includes(script.scriptId)) continue;
+            const isDisabled = pp.deleteTriggers && pp.disableTriggers.includes(script.scriptId);
 
             ss += `thing { // Script trigger ${script.id}\n`;
-            ss += `\ttype = ${THINGS.trigger};\n`;
+            ss += `\ttype = ${isDisabled ? THINGS.disabledtrigger : THINGS.trigger};\n`;
             ss += `\tx = ${script.mapX};\n`;
             ss += `\ty = ${script.mapY};\n`;
             ss += `\tid = ${(script.x << 5) | script.y};\n`;
