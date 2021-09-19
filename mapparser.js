@@ -624,7 +624,6 @@ class Parser {
                 ss += `\tx = ${x};\n`;
                 ss += `\ty = ${y};\n`;
                 ss += `\theight = ${z};\n`;
-                ss += `\tid = ${(thing.x << 5) | thing.y};\n`;
                 ss += `\tcomment = "Will spawn ${thing.id}";\n`;
             } else if (THINGS[thing.id.toString()] && !isDecal) {
                 ss += "thing {\n";
@@ -649,6 +648,8 @@ class Parser {
                 ss += `\targ0 = ${script.id};\n`;
                 script.linked = true;
             }
+
+            ss += `\tid = ${(thing.x << 5) | thing.y};\n`;
 
             ss += "\tskill1 = true;\n";
             ss += "\tskill2 = true;\n";
@@ -910,6 +911,7 @@ class Parser {
             ss += `\ttype = ${THINGS.trigger};\n`;
             ss += `\tx = ${script.mapX};\n`;
             ss += `\ty = ${script.mapY};\n`;
+            ss += `\tid = ${(script.x << 5) | script.y};\n`;
             ss += `\tspecial = 80;\n`;
             ss += `\targ0 = ${script.id};\n`;
             ss += `\tcomment = ${JSON.stringify(JSON.stringify(script))};\n`;
