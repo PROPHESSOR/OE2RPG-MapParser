@@ -83,8 +83,8 @@ module.exports = {
                 return "ACS_Execute(3008, 0, " + (arg0) + ", " + ((arg >> 24) & 0xFF) + ");";
             case 40:
                 return "ScriptCall(\"NotebookAPI\", \"AddNotebookEntry\", getString(" + (arg) + "));";
-            // case 10:
-            //     return "ACS_NamedExecuteWait(\"lockwindow\", 0, getString(" + ((arg1)) + "), getString(" + (arg0) + "), " + scriptNum + ");";
+            case 10:
+                return "ACS_NamedExecuteWait(\"lockwindow\", 0, getString(" + arg1 + "), getString(" + arg0 + "), " + scriptNum + ");";
 
             case 47: {
                 const a = readBits(arg, 8);
@@ -108,7 +108,7 @@ module.exports = {
                     amount = 1;
                 }
 
-                return [`Delay(0); /* Give item ${ITEMS[item] || item} x${amount} */`];
+                return [`Print(s:"Give item ${ITEMS[item] || item} x${amount}");`];
             }
         }
 
