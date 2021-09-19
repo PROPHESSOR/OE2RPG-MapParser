@@ -80,7 +80,7 @@ module.exports = {
                     return "SpawnForced(\"Explosion\", getMediumX(" + thing.x + "), getMediumY(" + thing.y + "), 0);";
                 }
             case 29: // Earth quake
-                return "ACS_Execute(3008, 0, " + (arg & 0xFFFFFF) + ", " + ((arg >> 24) & 0xFF) + ");";
+                return "ACS_Execute(3008, 0, " + (arg0) + ", " + ((arg >> 24) & 0xFF) + ");";
             case 40:
                 return "ScriptCall(\"NotebookAPI\", \"AddNotebookEntry\", getString(" + (arg) + "));";
             // case 10:
