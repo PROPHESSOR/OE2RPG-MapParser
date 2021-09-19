@@ -941,6 +941,38 @@ class Parser {
     generateScripts(scripts, bytecode, things) {
         const outScripts = [];
 
+        outScripts.push(`#include "zcommon.acs"
+
+str MAPNAME = "MAPNAME";
+
+function str getString(int id) {
+    return StrParam(l:StrParam(s:"OE2RP_", s:MAPNAME, s:"_", i:id));
+}
+
+function str getStringIndex(int id) {
+    return StrParam(s:StrParam(s:"OE2RP_", s:MAPNAME, s:"_", i:id));
+}
+
+function fixed getMediumX(int x) {
+    return (x * 8) << 16;
+}
+
+function fixed getMediumY(int y) {
+    return (2048 - y * 8) << 16;
+}
+
+Script 666 ENTER{
+    // Display map name
+    SetHudSize(640, 400, 0);
+    SetFont("bigfont");
+    HudMessage(
+        l:StrParam(s:"OE2RP_", s:MAPNAME, s:"_0");
+        HUDMSG_FADEOUT, 0, CR_GRAY, 320.4, 190.0, 3.5, 1.0
+    );
+    ACS_Execute(3005, 0); // WIP label
+}
+`);
+
         const lookupEventVar = arg2 => {
             let ii = ((((arg2 & 0xFFFF0000) >> 16)) & 0xFFFF);
             if (ii === 0) return 0;
