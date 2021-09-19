@@ -1004,7 +1004,7 @@ Script 666 ENTER{
 
                 const line = [
                     `if(arg2 == ${lookupEventVar()})`,
-                    OPCODES.getACS(code.opcode, code.arg0, code.arg1, things, getScriptVar) || 'Delay(0);',
+                    OPCODES.getACS(code.opcode, code.arg0, code.arg1, things, script, getScriptVar) || 'Delay(0);',
                     '//',
                     OPCODES.getIR(code.opcode, code.arg0, code.arg1) || `OPCODE ${code.opcode} (${code.arg0}, ${code.arg1})`
                 ];

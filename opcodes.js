@@ -23,7 +23,7 @@ function getThingName(thingId) {
 }
 
 module.exports = {
-    getACS(opcode, arg, cond, things, getScriptVar) {
+    getACS(opcode, arg, cond, things, script, getScriptVar) {
         const arg0 = readBits(arg, 8);
         const arg1 = readBits(arg, 8, 8);
 
@@ -84,7 +84,7 @@ module.exports = {
             case 40:
                 return "ScriptCall(\"NotebookAPI\", \"AddNotebookEntry\", getString(" + (arg) + "));";
             case 10:
-                return "ACS_NamedExecuteWait(\"lockwindow\", 0, getString(" + arg1 + "), getString(" + arg0 + "), " + scriptNum + ");";
+                return "ACS_NamedExecuteWait(\"lockwindow\", 0, getString(" + arg1 + "), getString(" + arg0 + "), " + script.id + ");";
 
             case 47: {
                 const a = readBits(arg, 8);
