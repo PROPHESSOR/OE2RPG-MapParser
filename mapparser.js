@@ -959,6 +959,8 @@ class Parser {
             }
 
             const lines = [];
+
+            lines.push(`Script ${script.scriptId} (void) {`);
             
             const slice = bytecode.slice(script.bytecodeOffset, script.bytecodeOffset + script.bytecodeLength);
 
@@ -976,11 +978,20 @@ class Parser {
                 body.push(line.join(' '));
             }
 
+            const scriptVarsLines = [];
+
+            for (let i = 0; i < scriptVars.length; i++) {
+                const scriptVar = scriptVars[i];
+                const x = Number(scriptVar.split(';')[0]);
+                const y = Number(scriptVar.split(';')[1]);
+
+                scriptVarsLines.push(`int container${i} = ${-(((x << 5) | (y)))}; // (${scriptVars[i]})`);
+            }
+
+            body.unshift(...scriptVarsLines, '');
+
             lines.push(...body.map(x => '    ' + x));
 
-            // TODO: Generate script vars
-
-            lines.unshift(`Script ${script.scriptId} (void) {`);
             lines.push(`}`);
 
             outScripts.push(lines.join('\n'));
