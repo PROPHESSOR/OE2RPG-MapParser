@@ -1000,6 +1000,11 @@ Script 666 ENTER{
             
             const slice = bytecode.slice(script.bytecodeOffset, script.bytecodeOffset + script.bytecodeLength);
 
+            // Do not generate door close junk
+            if (slice.length === 1 && slice[0].opcode === 16) {
+                continue;
+            }
+
             const body = [];
 
             for (const code of slice) {
